@@ -1,26 +1,271 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ── Ink & Emerald design tokens (SITE-PLAN.md §7) ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: #fafaf7;
+  --color-surface: #f2f2ec;
+  --color-ink: #15171a;
+  --color-ink2: #4a4f55;
+  --color-emerald: #0e5c45;
+  --color-emerald-deep: #0a4634;
+  --color-tint: #e8f1ed;
+  --color-band: #101814;
+  --color-band-ink: #edede8;
+  --color-band-mut: #a8b3aa;
+  --color-band-line: #283129;
+  --color-hairline: #e3e3dc;
+
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-jbmono), ui-monospace, "SF Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-tint);
+  color: var(--color-emerald-deep);
+}
+
+/* Custom classes live in the components layer so Tailwind utilities
+   (hidden, responsive variants, etc.) can override them. */
+@layer components {
+/* ── Type ── */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  font-variation-settings: "opsz" 72;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-emerald);
+}
+
+.mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.h1 {
+  font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+}
+.h2 {
+  font-size: clamp(1.9rem, 3.4vw, 3.05rem);
+}
+.h3 {
+  font-size: clamp(1.35rem, 2vw, 1.56rem);
+}
+
+.measure {
+  max-width: 68ch;
+}
+
+/* ── Layout ── */
+.container-g {
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+@media (min-width: 768px) {
+  .container-g {
+    padding-inline: 2.5rem;
+  }
+}
+
+.section-pad {
+  padding-block: clamp(5rem, 9vw, 9.5rem);
+}
+.section-pad-sm {
+  padding-block: clamp(3.5rem, 6vw, 6rem);
+}
+
+.hairline-card {
+  background: #ffffff;
+  border: 1px solid var(--color-hairline);
+  border-radius: 10px;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.4rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+.btn .arrow {
+  transition: transform 0.2s ease;
+}
+.btn:hover .arrow {
+  transform: translateX(3px);
+}
+.btn-primary {
+  background: var(--color-emerald);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background: var(--color-emerald-deep);
+}
+.btn-ghost {
+  border: 1px solid var(--color-hairline);
+  color: var(--color-ink);
+  background: transparent;
+}
+.btn-ghost:hover {
+  border-color: var(--color-ink2);
+}
+.btn-on-dark {
+  background: var(--color-band-ink);
+  color: var(--color-band);
+}
+.btn-on-dark:hover {
+  background: #ffffff;
+}
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--color-emerald);
+}
+.link-arrow .arrow {
+  transition: transform 0.2s ease;
+}
+.link-arrow:hover .arrow {
+  transform: translateX(3px);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Scroll reveal (once, transform/opacity only) ──
+   Hidden state applies only when JS is running (html.js set in layout),
+   so no-JS visitors and crawlers always see full content. */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.js .reveal.vis {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .btn .arrow,
+  .link-arrow .arrow {
+    transition: none;
+  }
+}
+
+/* ── Dark band (Deskii) + blueprint texture ── */
+.band {
+  background-color: var(--color-band);
+  color: var(--color-band-ink);
+}
+.blueprint {
+  background-image: linear-gradient(var(--color-band-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-band-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Forms ── */
+.field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ink2);
+  margin-bottom: 0.45rem;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--color-hairline);
+  border-radius: 8px;
+  padding: 0.8rem 0.95rem;
+  font-size: 1rem;
+  color: var(--color-ink);
+  transition: border-color 0.15s ease;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--color-emerald);
+  outline: none;
+}
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #9aa09b;
+}
+
+/* ── FAQ (native details) ── */
+.faq details {
+  border-top: 1px solid var(--color-hairline);
+  padding: 1.1rem 0;
+}
+.faq details:last-child {
+  border-bottom: 1px solid var(--color-hairline);
+}
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.05rem;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: "+";
+  font-family: var(--font-mono);
+  color: var(--color-emerald);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.faq details[open] summary::after {
+  content: "–";
+}
+.faq details p {
+  margin-top: 0.7rem;
+  color: var(--color-ink2);
+  max-width: 62ch;
+}
 }

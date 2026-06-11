@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gemfield Consulting — Website
 
-## Getting Started
+The production site for gemfieldconsulting.com. Next.js (App Router, fully static) + TypeScript + Tailwind v4.
+Strategy and design system: see `../SITE-PLAN.md` and `../COMPETITOR-REPORT.md`.
 
-First, run the development server:
+## Develop
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev     # http://localhost:3000
+npm run build   # production build (all routes static)
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Where things live
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/lib/content.ts` — **all site copy.** Edit copy here, not in components.
+- `src/lib/constants.ts` — email, Calendly URL, form endpoint, phone (null = hidden), analytics IDs (null = disabled), social links.
+- `src/app/globals.css` — the Ink & Emerald design tokens and component classes.
+- `src/components/deskii-frame.tsx` — placeholder Deskii previews. **Swap for real seeded screenshots when captured.**
+- Founder block placeholders: `WHY.founder` in content.ts + the portrait blocks in `home/closing-sections.tsx` and `about/page.tsx`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Before launch (gates)
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Ownership model (SITE-PLAN §11 item 0)** — confirm the free-build terms; pledge copy, /terms, and the license agreement must match. Counsel review of /privacy and /terms.
+2. Founder name/photo/bio → replace placeholders.
+3. Clean Deskii screenshots with seeded demo data → replace `deskii-frame.tsx` mocks.
+4. Confirm domain DNS, Calendly URL, and FormSubmit endpoint activation; set up SPF/DKIM/DMARC before nurture emails.
+5. Set `gaId` / `metaPixelId` in constants.ts; verify audit form → email → Calendly end-to-end on a real phone.
+6. Marketing (Growth Fuel) management fees → publish numbers when confirmed.
