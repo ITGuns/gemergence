@@ -1,14 +1,61 @@
 /**
- * Frame-rate scroll state shared between the DOM scroll handler and the
- * Three.js scene. Plain module singleton read inside useFrame — values
- * mutate every scroll tick without triggering React renders.
+ * Motion v2 scroll state. One section is "active" at a time; the scene's
+ * persistent growth-system object glides to the open side of that section
+ * and the section's exhibit pops in beside the copy tile.
+ *
+ * Plain module singleton mutated by the scroll handler, read in useFrame —
+ * no React renders on scroll.
  */
+
+/** Section order — must match the DOM sections on the immersive page. */
+export const SECTION_IDS = [
+  "hero",
+  "problem",
+  "system",
+  "fuel",
+  "deskii",
+  "offer",
+  "ownership",
+  "industries",
+  "process",
+  "proof",
+  "plans",
+  "why",
+  "cta",
+] as const;
+
+export type SectionId = (typeof SECTION_IDS)[number];
+
+/**
+ * Which side the COPY tile sits on per section; the exhibit takes the other.
+ * 1 = copy left → exhibit right; -1 = copy right → exhibit left.
+ */
+export const COPY_SIDE: Record<SectionId, 1 | -1> = {
+  hero: 1,
+  problem: -1,
+  system: 1,
+  fuel: -1,
+  deskii: 1,
+  offer: -1,
+  ownership: 1,
+  industries: -1,
+  process: 1,
+  proof: -1,
+  plans: 1,
+  why: -1,
+  cta: 1,
+};
+
 export const journey = {
-  /** 0..1 through the dark journey container */
+  /** 0..1 through the whole page */
   p: 0,
-  /** 0..1 through the pinned System assembly */
+  /** active section index into SECTION_IDS */
+  sec: 0,
+  /** 0..1 progress within the active section */
+  t: 0,
+  /** 0..1 through the pinned System assembly (7 pillar beats) */
   sys: 0,
-  /** 0..1 through the pinned Deskii formation */
+  /** 0..1 through the pinned Deskii showcase (6 module beats) */
   desk: 0,
   /** -1..1 normalized pointer for parallax */
   mx: 0,
@@ -31,22 +78,4 @@ export function pinProgress(el: HTMLElement | null): number {
   const total = r.height - window.innerHeight;
   if (total <= 0) return 0;
   return clamp01(-r.top / total);
-}
-
-/** Journey section bands (global p ranges) — keep in sync with scene keyframes. */
-export const BANDS = {
-  hero: [0, 0.12],
-  problem: [0.12, 0.26],
-  system: [0.26, 0.54],
-  fuel: [0.54, 0.66],
-  deskii: [0.66, 0.86],
-  handover: [0.86, 1],
-} as const;
-
-/** 0..1 presence of a band at progress p, with soft edges. */
-export function bandWeight(p: number, band: readonly [number, number], feather = 0.04) {
-  const [a, b] = band;
-  const inUp = clamp01((p - (a - feather)) / feather);
-  const outDown = clamp01(((b + feather) - p) / feather);
-  return Math.min(inUp, outDown);
 }
