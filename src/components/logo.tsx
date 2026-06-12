@@ -28,7 +28,7 @@ export function Wordmark({ dark = false }: { dark?: boolean }) {
     <span className="flex items-center gap-2.5">
       <Logo dark={dark} />
       <span className="leading-none">
-        <span className="block text-[0.95rem] font-bold tracking-[0.08em]">
+        <span className={`block text-[0.95rem] font-bold tracking-[0.08em] ${dark ? "text-band-ink" : "text-ink"}`}>
           GEMFIELD
         </span>
         <span

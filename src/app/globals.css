@@ -376,3 +376,71 @@ html.js .reveal.vis {
   max-width: 62ch;
 }
 }
+
+/* ════ Immersive journey: flow pass (unlayered → wins over components/utilities) ════ */
+
+/* Type scales with viewport HEIGHT too, so tiles fit short screens. */
+.journey .h1 {
+  font-size: min(clamp(2.5rem, 5.4vw, 4.75rem), calc(1rem + 6.2vh));
+}
+.journey .h2 {
+  font-size: min(clamp(1.9rem, 3.4vw, 3.05rem), calc(0.85rem + 3.4vh));
+}
+
+/* Short-viewport compression: scale whole tiles down before they overflow. */
+@media (min-width: 1024px) and (max-height: 880px) {
+  .journey .glass {
+    zoom: 0.93;
+  }
+}
+@media (min-width: 1024px) and (max-height: 790px) {
+  .journey .glass {
+    zoom: 0.87;
+  }
+}
+@media (min-width: 1024px) and (max-height: 716px) {
+  .journey .glass {
+    zoom: 0.8;
+  }
+}
+
+/* Tighter audit form inside the journey CTA tile. */
+.journey .field input,
+.journey .field select,
+.journey .field textarea {
+  padding-block: 0.55rem;
+}
+
+/* ── Section settling: positioning markers for the JS scroll-settle (beats
+   inside the pinned sections). CSS mandatory snap rubber-bands notched mice,
+   so the settle itself is JS-driven in immersive-home. ── */
+.snap-beat {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* ── Tile reveal: info tiles glide into place as their section arrives.
+   Gated on html.js (set by the layout inline script) so no-JS visitors and
+   crawlers always see full content. ── */
+@media (prefers-reduced-motion: no-preference) {
+  html.js .journey section .glass,
+  html.js .journey [data-reveal] {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html.js .journey .in .glass,
+  html.js .journey .in [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  /* stacked tiles stagger */
+  html.js .journey .glass + .glass {
+    transition-delay: 0.12s;
+  }
+}

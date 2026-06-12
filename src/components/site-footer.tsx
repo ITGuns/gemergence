@@ -26,7 +26,7 @@ export function SiteFooter() {
   const line = dark ? "border-band-line" : "border-hairline";
 
   return (
-    <footer className={`${dark ? "on-dark-focus border-t border-band-line bg-[#0a0f0c] text-band-ink" : "border-t border-hairline bg-surface"}`}>
+    <footer className={`${dark ? "on-dark-focus relative z-10 border-t border-band-line bg-[#0a0f0c] text-band-ink" : "border-t border-hairline bg-surface"}`}>
       <div className="container-g section-pad-sm">
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-5">

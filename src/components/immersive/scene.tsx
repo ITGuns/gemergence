@@ -36,8 +36,12 @@ const X_SIDE = (id: SectionId) => COPY_SIDE[id];
 /** Shared per-frame stage state (set by Rig, read by everything). */
 const stage = { fit: 1 };
 
-/** Exhibit anchor distance from center (world units). */
-const AX = 3.0;
+/**
+ * Exhibit anchor distance from center (world units). The camera leans 0.7
+ * toward the exhibit side, and the copy tile ends near world x≈0.4, so the
+ * visual center of the open half sits around |x|≈4 — not 3.
+ */
+const AX = 4.0;
 
 /**
  * Active-beat tracker: which section (or pillar beat within the pinned
@@ -54,7 +58,7 @@ function Rig({ gemLight }: { gemLight: React.RefObject<THREE.PointLight | null> 
   const look = useRef(new THREE.Vector3(0, 0, 0));
 
   useFrame((state) => {
-    stage.fit = clamp01((viewport.aspect - 0.5) / 1.1) * 0.65 + 0.35; // 0.35 narrow → 1 wide
+    stage.fit = clamp01((viewport.aspect - 0.4) / 1.25) * 0.7 + 0.3; // 0.3 narrow → 1 wide
     const t = state.clock.elapsedTime;
     const id = SECTION_IDS[journey.sec];
     const side = X_SIDE(id);
@@ -92,8 +96,9 @@ function Rig({ gemLight }: { gemLight: React.RefObject<THREE.PointLight | null> 
 function Fade({
   when,
   position = [0, 0, 0],
-  speed = 5,
-  pop = 0.3,
+  speed = 4.2,
+  pop = 0.45,
+  slide = 0,
   delay = 0,
   debugId,
   children,
@@ -102,6 +107,8 @@ function Fade({
   position?: [number, number, number];
   speed?: number;
   pop?: number;
+  /** Horizontal glide distance: the exhibit flows in from this x-offset. */
+  slide?: number;
   /** Seconds after the active beat arrives before this element enters. */
   delay?: number;
   debugId?: string;
@@ -131,9 +138,13 @@ function Fade({
     // ease-out-back: a ~5% overshoot so entrances pop instead of ooze
     const k = smooth(w);
     const back = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2);
-    const s = (0.7 + 0.3 * back) * stage.fit;
+    const s = (0.7 + 0.3 * back) * 1.06 * stage.fit;
     g.scale.setScalar(s);
-    g.position.set(position[0] * stage.fit, position[1] + (1 - smooth(w)) * -pop, position[2]);
+    g.position.set(
+      (position[0] + (1 - k) * slide) * stage.fit,
+      position[1] + (1 - k) * -pop,
+      position[2]
+    );
     g.traverse((o) => {
       const m = (o as THREE.Mesh).material as (THREE.Material & { opacity: number }) | undefined;
       if (m && typeof m.opacity === "number") {
@@ -400,7 +411,7 @@ const GEM_POSE: Record<SectionId, { y: number; s: number; dx?: number; dim?: boo
   fuel: { y: -0.1, s: 0.85 },
   deskii: { y: 2.7, s: 0.38 },
   offer: { y: 1.2, s: 0.65, dx: -1.5 },
-  ownership: { y: 0.25, s: 1.0, dx: 0.45 },
+  ownership: { y: 0.25, s: 1.0, dx: 0.3 },
   industries: { y: 2.45, s: 0.52 },
   process: { y: 2.5, s: 0.5 },
   proof: { y: 2.5, s: 0.5 },
@@ -458,9 +469,9 @@ function Gem() {
     const pose = GEM_POSE[id];
     const x = X_SIDE(id) * (AX + (pose.dx ?? 0)) * stage.fit;
 
-    // glide — snappier than v2 so section changes read as a move, not a drift
-    g.position.x += (x - g.position.x) * Math.min(1, dt * 3.2);
-    g.position.y += (pose.y + Math.sin(t * 0.5) * 0.06 - g.position.y) * Math.min(1, dt * 3.2);
+    // glide — slow enough to read as one continuous flowing move
+    g.position.x += (x - g.position.x) * Math.min(1, dt * 2.4);
+    g.position.y += (pose.y + Math.sin(t * 0.5) * 0.06 - g.position.y) * Math.min(1, dt * 2.4);
     gemState.x = g.position.x;
     gemState.y = g.position.y;
 
@@ -997,7 +1008,6 @@ function PillarReporting() {
         <circleGeometry args={[0.05, 12]} />
         <meshBasicMaterial color="#eaf6ef" transparent opacity={0.95} depthWrite={false} />
       </mesh>
-      <Label text="EVERY NUMBER, VISIBLE" size={0.08} color={MUT} position={[0.62, -1.05, 0.01]} />
     </Window>
   );
 }
@@ -1288,7 +1298,9 @@ function FuelExhibit() {
     flows.current?.children.forEach((d, i) => {
       const [cx, cy] = pos(i % chips.length);
       const k = (t * 0.3 + (i * 0.37) % 1) % 1;
-      d.position.set(cx * (1 - k), cy * (1 - k), 0.03);
+      // travel the line segment only (0.78r → 0.3r) so dots never sit on chips
+      const r = 0.78 - k * 0.48;
+      d.position.set(cx * r, cy * r, 0.03);
       const m = (d as THREE.Mesh).material as THREE.MeshBasicMaterial;
       m.opacity = Math.sin(k * Math.PI) * 0.85;
       d.scale.setScalar(1 - k * 0.5);
@@ -1484,7 +1496,7 @@ function IndustriesExhibit() {
   return (
     <group>
       {cards.map((name, i) => (
-        <PopKid key={name} delay={0.15 + i * 0.13} position={[i % 2 === 0 ? -0.45 : 0.45, 1.55 - i * 0.8, 0]}>
+        <PopKid key={name} delay={0.15 + i * 0.13} position={[i % 2 === 0 ? -0.45 : 0.45, 1.6 - i * 0.78, 0]}>
           <RPane w={2.85} h={0.66} r={0.12} color={PANEL_2} borderOpacity={0.3} />
           <group position={[-1.15, 0, 0.01]}>
             <IndustryGlyph kind={i} />
@@ -1493,7 +1505,7 @@ function IndustriesExhibit() {
           <Bar w={1.55} h={0.04} color={LINE} position={[-0.07, -0.16, 0.01]} />
         </PopKid>
       ))}
-      <Label text="BUILT FOR BUSINESSES THAT RUN ON QUALIFIED LEADS" size={0.095} position={[0, -2.0, 0]} />
+      <Label text="BUILT FOR BUSINESSES THAT RUN ON QUALIFIED LEADS" size={0.095} position={[0, -2.3, 0]} />
     </group>
   );
 }
@@ -1744,48 +1756,50 @@ function CtaExhibit() {
 function Exhibits() {
   const at = (id: SectionId, y = -0.1): [number, number, number] => [X_SIDE(id) * AX, y, 0];
   const is = (id: SectionId) => () => SECTION_IDS[journey.sec] === id;
+  /** Exhibits flow in from the screen edge toward their anchor. */
+  const sl = (id: SectionId) => X_SIDE(id) * 0.7;
   const pillar = (i: number) => () =>
     SECTION_IDS[journey.sec] === "system" && Math.min(6, Math.floor(journey.sys * 7)) === i;
 
   return (
     <>
-      <Fade when={is("problem")} position={at("problem", 0.1)}>
+      <Fade when={is("problem")} position={at("problem", 0.1)} slide={sl("problem")}>
         <ProblemExhibit />
       </Fade>
       {PILLAR_VIGNETTES.map((V, i) => (
-        <Fade key={i} when={pillar(i)} position={at("system", -0.15)} speed={5.5}>
+        <Fade key={i} when={pillar(i)} position={at("system", -0.15)} speed={5} pop={0.35}>
           <V />
         </Fade>
       ))}
-      <Fade when={is("fuel")} position={at("fuel", -0.1)}>
+      <Fade when={is("fuel")} position={at("fuel", -0.1)} slide={sl("fuel")}>
         <FuelExhibit />
       </Fade>
-      <Fade when={is("deskii")} position={at("deskii", -0.05)}>
+      <Fade when={is("deskii")} position={at("deskii", -0.05)} slide={sl("deskii")}>
         <DeskiiApp />
       </Fade>
-      <Fade when={is("offer")} position={at("offer", 0)}>
+      <Fade when={is("offer")} position={at("offer", 0)} slide={sl("offer")}>
         <OfferExhibit />
       </Fade>
       {/* nudged outward so the left plaque column clears the copy tile */}
-      <Fade when={is("ownership")} position={[X_SIDE("ownership") * (AX + 0.45), 0, 0]}>
+      <Fade when={is("ownership")} position={[X_SIDE("ownership") * (AX + 0.3), 0, 0]} slide={sl("ownership")}>
         <OwnershipExhibit />
       </Fade>
-      <Fade when={is("industries")} position={at("industries", -0.15)}>
+      <Fade when={is("industries")} position={at("industries", -0.15)} slide={sl("industries")}>
         <IndustriesExhibit />
       </Fade>
-      <Fade when={is("process")} position={at("process", 0)}>
+      <Fade when={is("process")} position={at("process", 0)} slide={sl("process")}>
         <ProcessExhibit />
       </Fade>
-      <Fade when={is("proof")} position={at("proof", -0.1)}>
+      <Fade when={is("proof")} position={at("proof", -0.1)} slide={sl("proof")}>
         <ProofExhibit />
       </Fade>
-      <Fade when={is("plans")} position={at("plans", 0)}>
+      <Fade when={is("plans")} position={at("plans", 0)} slide={sl("plans")}>
         <PlansExhibit />
       </Fade>
-      <Fade when={is("why")} position={at("why", 0)}>
+      <Fade when={is("why")} position={at("why", 0)} slide={sl("why")}>
         <WhyExhibit />
       </Fade>
-      <Fade when={is("cta")} position={at("cta", 0.5)}>
+      <Fade when={is("cta")} position={at("cta", 0.5)} slide={sl("cta")}>
         <CtaExhibit />
       </Fade>
     </>

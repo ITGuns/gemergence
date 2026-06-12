@@ -18,20 +18,40 @@ const NAV = [
 
 export function SiteHeader() {
   const [solid, setSolid] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
   // The immersive journey at "/" runs dark; everything else is paper.
   const dark = usePathname() === "/";
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 24);
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setSolid(y > 24);
+      // On the journey, chrome gets out of the way: hide while heading down,
+      // return on a deliberate scroll up. Settle-driven scrolls don't count.
+      if (dark) {
+        const settling = (window as Window & { __gfSettling?: boolean }).__gfSettling;
+        if (y < window.innerHeight * 0.5) setHidden(false);
+        else if (!settling) {
+          if (y > lastY + 2) setHidden(true);
+          else if (y < lastY - 6) setHidden(false);
+        }
+      } else {
+        setHidden(false);
+      }
+      lastY = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [dark]);
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-200 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,translate,visibility] duration-300 ${
+        hidden && !open ? "invisible -translate-y-full" : "visible translate-y-0"
+      } ${
         solid || open
           ? dark
             ? "border-b border-band-line bg-band/90 backdrop-blur-sm"
