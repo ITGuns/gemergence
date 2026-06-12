@@ -108,8 +108,13 @@ export default function ImmersiveHome() {
       else if (dir === -1) cands = targets.filter((t) => t < rest - 2);
       if (cands.length === 0) cands = targets;
       const best = cands.reduce((a, t) => (Math.abs(t - y) < Math.abs(a - y) ? t : a));
-      rest = best;
-      if (Math.abs(best - y) > 2) {
+      if (Math.abs(best - y) <= 2) {
+        // Arrived/composed. Only NOW move the rest anchor: a glide that gets
+        // re-entered mid-flight (scroll-event gaps on slow frames) must keep
+        // measuring direction from where the gesture started, or the halfway
+        // point reads as an opposite-direction gesture and the page reverses.
+        rest = best;
+      } else {
         w.__gfSettling = true;
         window.scrollTo({ top: best, behavior: "smooth" });
       }
