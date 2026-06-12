@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Wordmark } from "./logo";
 import { ArrowRight, Menu, Phone, X } from "./icons";
@@ -18,6 +19,8 @@ const NAV = [
 export function SiteHeader() {
   const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
+  // The immersive journey at "/" runs dark; everything else is paper.
+  const dark = usePathname() === "/";
 
   useEffect(() => {
     const onScroll = () => setSolid(window.scrollY > 24);
@@ -30,13 +33,15 @@ export function SiteHeader() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-200 ${
         solid || open
-          ? "border-b border-hairline bg-paper/95 backdrop-blur-sm"
+          ? dark
+            ? "border-b border-band-line bg-band/90 backdrop-blur-sm"
+            : "border-b border-hairline bg-paper/95 backdrop-blur-sm"
           : "bg-transparent"
       }`}
     >
       <div className="container-g flex h-16 items-center justify-between gap-6">
         <Link href="/" aria-label="Gemfield Consulting — home" onClick={() => setOpen(false)}>
-          <Wordmark />
+          <Wordmark dark={dark} />
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Main">
@@ -44,7 +49,9 @@ export function SiteHeader() {
             <Link
               key={item.label}
               href={item.href}
-              className="text-[0.92rem] font-medium text-ink2 transition-colors hover:text-ink"
+              className={`text-[0.92rem] font-medium transition-colors ${
+                dark ? "text-band-mut hover:text-white" : "text-ink2 hover:text-ink"
+              }`}
             >
               {item.label}
             </Link>
@@ -55,7 +62,7 @@ export function SiteHeader() {
           {SITE.phone && (
             <a
               href={`tel:${SITE.phone}`}
-              className="hidden items-center gap-2 text-[0.92rem] font-semibold text-ink md:inline-flex"
+              className={`hidden items-center gap-2 text-[0.92rem] font-semibold md:inline-flex ${dark ? "text-band-ink" : "text-ink"}`}
             >
               <Phone size={15} />
               {SITE.phoneDisplay ?? SITE.phone}
@@ -67,7 +74,7 @@ export function SiteHeader() {
           </Link>
           <button
             type="button"
-            className="-mr-1 p-1.5 lg:hidden"
+            className={`-mr-1 p-1.5 lg:hidden ${dark ? "text-band-ink" : ""}`}
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
@@ -79,7 +86,9 @@ export function SiteHeader() {
 
       {open && (
         <nav
-          className="border-t border-hairline bg-paper px-6 pb-6 pt-3 lg:hidden"
+          className={`px-6 pb-6 pt-3 lg:hidden ${
+            dark ? "border-t border-band-line bg-band text-band-ink" : "border-t border-hairline bg-paper"
+          }`}
           aria-label="Mobile"
         >
           {NAV.map((item) => (
@@ -87,7 +96,9 @@ export function SiteHeader() {
               key={item.label}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="block border-b border-hairline py-3.5 text-[1.02rem] font-medium"
+              className={`block py-3.5 text-[1.02rem] font-medium ${
+                dark ? "border-b border-band-line" : "border-b border-hairline"
+              }`}
             >
               {item.label}
             </Link>

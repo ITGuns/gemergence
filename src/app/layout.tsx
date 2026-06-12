@@ -3,6 +3,7 @@ import { Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { VersionSwitcher } from "@/components/version-switcher";
 import { SITE } from "@/lib/constants";
 
 const fraunces = Fraunces({
@@ -92,6 +93,7 @@ export default function RootLayout({
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />
+        <VersionSwitcher />
       </body>
     </html>
   );

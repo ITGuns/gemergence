@@ -1,37 +1,5 @@
-import {
-  Hero,
-  Problem,
-  System,
-  Fuel,
-  Deskii,
-  Offer,
-  Ownership,
-} from "@/components/home/intro-sections";
-import {
-  Industries,
-  Process,
-  Proof,
-  Plans,
-  Why,
-  FinalCta,
-} from "@/components/home/closing-sections";
+import ImmersiveHome from "@/components/immersive/immersive-home";
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <Problem />
-      <System />
-      <Fuel />
-      <Deskii />
-      <Offer />
-      <Ownership />
-      <Industries />
-      <Process />
-      <Proof />
-      <Plans />
-      <Why />
-      <FinalCta />
-    </>
-  );
+  return <ImmersiveHome />;
 }

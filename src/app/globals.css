@@ -162,6 +162,12 @@ body {
   outline-offset: 2px;
   border-radius: 2px;
 }
+/* Dark contexts need a light ring — #0e5c45 is invisible on near-black. */
+.journey :focus-visible,
+.band :focus-visible,
+.on-dark-focus :focus-visible {
+  outline-color: #7fc8ad;
+}
 
 /* ── Scroll reveal (once, transform/opacity only) ──
    Hidden state applies only when JS is running (html.js set in layout),
@@ -230,6 +236,53 @@ html.js .reveal.vis {
 .field input::placeholder,
 .field textarea::placeholder {
   color: #9aa09b;
+}
+
+/* ── Immersive journey (homepage) ── */
+.journey {
+  background: radial-gradient(ellipse 120% 80% at 62% 38%, #101b14 0%, #0a0f0c 60%);
+  color: var(--color-band-ink);
+}
+/* Near-opaque fill instead of backdrop-filter: a blur over a per-frame
+   animating canvas forces an uncacheable compositor blur pass every frame
+   (janks iGPUs/mobile Safari) — and the darker fill keeps text at AA. */
+.glass {
+  background: rgba(13, 19, 15, 0.86);
+  border: 1px solid rgba(127, 200, 173, 0.16);
+  border-radius: 14px;
+}
+.scroll-cue {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-band-mut);
+}
+.scroll-cue span {
+  display: block;
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, transparent, #7fc8ad);
+  animation: cue-drop 2.2s ease-in-out infinite;
+}
+@keyframes cue-drop {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue span {
+    animation: none;
+  }
 }
 
 /* ── FAQ (native details) ── */
