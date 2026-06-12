@@ -72,12 +72,14 @@ function Fade({
   position = [0, 0, 0],
   speed = 4.5,
   pop = 0.3,
+  debugId,
   children,
 }: {
   when: () => boolean;
   position?: [number, number, number];
   speed?: number;
   pop?: number;
+  debugId?: string;
   children: React.ReactNode;
 }) {
   const ref = useRef<THREE.Group>(null);
@@ -85,6 +87,17 @@ function Fade({
     const g = ref.current;
     if (!g) return;
     const target = when() ? 1 : 0;
+    if (debugId && typeof window !== "undefined") {
+      const w = window as unknown as Record<string, Record<string, unknown>>;
+      w.__fades = w.__fades || {};
+      w.__fades[debugId] = {
+        target,
+        w: +(((g.userData.w as number) ?? 0)).toFixed(3),
+        vis: g.visible,
+        pos: [+g.position.x.toFixed(2), +g.position.y.toFixed(2)],
+        scale: +g.scale.x.toFixed(2),
+      };
+    }
     const cur = (g.userData.w as number) ?? 0;
     const w = cur + (target - cur) * Math.min(1, dt * speed);
     g.userData.w = w;

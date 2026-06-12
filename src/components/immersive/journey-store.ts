@@ -46,23 +46,39 @@ export const COPY_SIDE: Record<SectionId, 1 | -1> = {
   cta: 1,
 };
 
-export const journey = {
+type Journey = {
   /** 0..1 through the whole page */
-  p: 0,
+  p: number;
   /** active section index into SECTION_IDS */
-  sec: 0,
+  sec: number;
   /** 0..1 progress within the active section */
-  t: 0,
+  t: number;
   /** 0..1 through the pinned System assembly (7 pillar beats) */
-  sys: 0,
+  sys: number;
   /** 0..1 through the pinned Deskii showcase (6 module beats) */
-  desk: 0,
+  desk: number;
   /** -1..1 normalized pointer for parallax */
-  mx: 0,
-  my: 0,
+  mx: number;
+  my: number;
 };
 
-// Dev/QA introspection (harmless in prod; lets tooling read scroll state).
+const fresh = (): Journey => ({ p: 0, sec: 0, t: 0, sys: 0, desk: 0, mx: 0, my: 0 });
+
+/**
+ * The scroll store MUST be a true singleton, but this module gets duplicated
+ * across bundler chunk graphs (it is imported statically by the page and
+ * inside the dynamically-imported scene chunk — each copy evaluates its own
+ * module instance, so a plain `const` here would give the scroll handler and
+ * the scene two different objects and the scene would never see scroll
+ * updates). Keying the object on `window` makes every copy converge.
+ * The server-side render gets an inert per-module object (no scrolling there).
+ */
+export const journey: Journey =
+  typeof window === "undefined"
+    ? fresh()
+    : ((window as unknown as { __gfJourney?: Journey }).__gfJourney ??= fresh());
+
+// QA/diagnostics alias.
 if (typeof window !== "undefined") {
   (window as unknown as Record<string, unknown>).__journey = journey;
 }

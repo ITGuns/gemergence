@@ -39,12 +39,21 @@ export default function ImmersiveHome() {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
+    let webgl = false;
     try {
       const c = document.createElement("canvas");
-      if (c.getContext("webgl2") || c.getContext("webgl")) setCanvasOn(true);
+      webgl = !!(c.getContext("webgl2") || c.getContext("webgl"));
     } catch {
       /* no WebGL — static dark page */
     }
+    if (!webgl) return;
+    // Mount the Canvas on a short timer so React StrictMode's dev
+    // double-invoke (effect → cleanup → effect) cancels the first schedule
+    // and only ONE R3F instance ever mounts. Two instances share one
+    // <canvas> element, and disposing the first force-loses the GL context
+    // out from under the second — the dev-only "frozen scene" bug.
+    const id = window.setTimeout(() => setCanvasOn(true), 250);
+    return () => window.clearTimeout(id);
   }, []);
 
   useEffect(() => {
