@@ -188,6 +188,85 @@ function PopKid({
   );
 }
 
+/* ── Gem emergence (built one section at a time) ─────────────────────
+ * Assets stay collapsed INSIDE the gem until it finishes gliding into place,
+ * then grow out — solid (scale 0→1 from a point at the gem to their resting
+ * spot), no opacity fade. `gemArrive` records when the gem actually reached
+ * the active section (set in the Gem component); parts only grow after that.
+ */
+const gemArrive = { sec: -1, t: 0 };
+
+/** Positions/scales a section's stage to match the rest of the site. */
+function GemStage({
+  position,
+  children,
+}: {
+  position: [number, number, number];
+  children: React.ReactNode;
+}) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    const g = ref.current;
+    if (!g) return;
+    g.position.set(position[0] * stage.fit, position[1], position[2]);
+    g.scale.setScalar(1.06 * stage.fit);
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
+/** A part that grows solidly out of the gem (stage origin) to `to`. */
+function GemPart({
+  sec,
+  to,
+  from = [0, 0, 0],
+  delay = 0,
+  rate = 3.4,
+  children,
+}: {
+  sec: number;
+  to: [number, number, number];
+  from?: [number, number, number];
+  delay?: number;
+  rate?: number;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((state, dt) => {
+    const g = ref.current;
+    if (!g) return;
+    const ready =
+      journey.sec === sec && gemArrive.sec === sec && state.clock.elapsedTime - gemArrive.t >= delay;
+    const target = ready ? 1 : 0;
+    const cur = (g.userData.w as number) ?? 0;
+    const w = cur + (target - cur) * Math.min(1, dt * rate);
+    g.userData.w = w;
+    g.visible = w > 0.003;
+    if (!g.visible) return;
+    // flat UI must paint OVER the gem body (a part can settle right where the
+    // gem sits); 3D solids keep their depth. Done once, when first shown.
+    if (!g.userData.flat) {
+      g.userData.flat = true;
+      g.traverse((o) => {
+        const m = (o as THREE.Mesh).material as
+          | (THREE.Material & { opacity?: number; isMeshStandardMaterial?: boolean })
+          | undefined;
+        if (m && typeof m.opacity === "number" && !m.isMeshStandardMaterial) {
+          m.depthTest = false;
+          m.depthWrite = false;
+        }
+      });
+    }
+    const k = smooth(w); // solid grow — scale only, opacity untouched
+    g.scale.setScalar(Math.max(0.0001, k));
+    g.position.set(
+      from[0] + (to[0] - from[0]) * k,
+      from[1] + (to[1] - from[1]) * k,
+      from[2] + (to[2] - from[2]) * k
+    );
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
 /* ── Tiny vocabulary of parts ───────────────────────────────────── */
 function Bar({
   w,
@@ -412,7 +491,7 @@ const GEM_POSE: Record<SectionId, { y: number; s: number; dx?: number; dim?: boo
   deskii: { y: 2.7, s: 0.38 },
   offer: { y: 1.2, s: 0.65, dx: -1.5 },
   ownership: { y: 0.25, s: 1.0, dx: 0.3 },
-  industries: { y: 2.45, s: 0.52 },
+  industries: { y: -0.15, s: 0.62 },
   process: { y: 2.5, s: 0.5 },
   proof: { y: 2.5, s: 0.5 },
   plans: { y: 2.55, s: 0.5 },
@@ -470,10 +549,22 @@ function Gem() {
     const x = X_SIDE(id) * (AX + (pose.dx ?? 0)) * stage.fit;
 
     // glide — slow enough to read as one continuous flowing move
-    g.position.x += (x - g.position.x) * Math.min(1, dt * 2.4);
-    g.position.y += (pose.y + Math.sin(t * 0.5) * 0.06 - g.position.y) * Math.min(1, dt * 2.4);
+    const ty = pose.y + Math.sin(t * 0.5) * 0.06;
+    g.position.x += (x - g.position.x) * Math.min(1, dt * 6);
+    g.position.y += (ty - g.position.y) * Math.min(1, dt * 6);
     gemState.x = g.position.x;
     gemState.y = g.position.y;
+
+    // mark the moment the gem actually reaches the active section — exhibits
+    // built on GemPart wait for this before growing out of the gem.
+    if (
+      gemArrive.sec !== journey.sec &&
+      Math.abs(g.position.x - x) < 0.12 &&
+      Math.abs(g.position.y - ty) < 0.12
+    ) {
+      gemArrive.sec = journey.sec;
+      gemArrive.t = t;
+    }
 
     // beat pulse: section arrivals + pillar locks + deskii module pops
     const beat =
@@ -1287,57 +1378,28 @@ function ProblemExhibit() {
 
 /** Fuel — channels feed the system: energy flows from every chip into the gem. */
 function FuelExhibit() {
-  const flows = useRef<THREE.Group>(null);
+  const FUEL = SECTION_IDS.indexOf("fuel");
   const chips = ["GOOGLE ADS", "META & IG", "RETARGETING", "EMAIL · SMS", "SOCIAL", "LANDING PAGES"];
   const pos = (i: number): [number, number] => {
     const a = (i / chips.length) * Math.PI * 2 + Math.PI / 6;
     return [Math.cos(a) * 2.3, Math.sin(a) * 1.55];
   };
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    flows.current?.children.forEach((d, i) => {
-      const [cx, cy] = pos(i % chips.length);
-      const k = (t * 0.3 + (i * 0.37) % 1) % 1;
-      // travel the line segment only (0.78r → 0.3r) so dots never sit on chips
-      const r = 0.78 - k * 0.48;
-      d.position.set(cx * r, cy * r, 0.03);
-      const m = (d as THREE.Mesh).material as THREE.MeshBasicMaterial;
-      m.opacity = Math.sin(k * Math.PI) * 0.85;
-      d.scale.setScalar(1 - k * 0.5);
-    });
-  });
   return (
-    <group>
+    <>
+      {/* each channel chip rings out of the gem to its place, staggered */}
       {chips.map((c, i) => {
         const [x, y] = pos(i);
         return (
-          <group key={c}>
-            <Line
-              points={[
-                [x * 0.82, y * 0.82, 0],
-                [x * 0.3, y * 0.3, 0],
-              ]}
-              color={EM_MID}
-              lineWidth={1}
-              transparent
-              opacity={0.28}
-            />
-            <PopKid delay={0.15 + i * 0.12} position={[x, y, 0.02]}>
-              <ChipTag text={c} w={1.62} h={0.46} size={0.095} borderOpacity={0.38} />
-            </PopKid>
-          </group>
+          <GemPart key={c} sec={FUEL} to={[x, y, 0.02]} delay={i * 0.08}>
+            <ChipTag text={c} w={1.62} h={0.46} size={0.095} borderOpacity={0.38} />
+          </GemPart>
         );
       })}
-      <group ref={flows}>
-        {Array.from({ length: 12 }, (_, i) => (
-          <mesh key={i}>
-            <circleGeometry args={[0.05, 10]} />
-            <meshBasicMaterial color={EM_LIGHT} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
-          </mesh>
-        ))}
-      </group>
-      <Label text="FUEL FEEDS THE SYSTEM — NEVER THE OTHER WAY" size={0.105} position={[0, -2.25, 0]} />
-    </group>
+      {/* caption grows in place at the bottom, last */}
+      <GemPart sec={FUEL} to={[0, -2.25, 0]} from={[0, -2.25, 0]} delay={0.5}>
+        <Label text="FUEL FEEDS THE SYSTEM — NEVER THE OTHER WAY" size={0.105} />
+      </GemPart>
+    </>
   );
 }
 
@@ -1396,53 +1458,28 @@ function OfferExhibit() {
 
 /** Ownership — the gem hands the keys outward to four declarations. */
 function OwnershipExhibit() {
-  const flows = useRef<THREE.Group>(null);
+  const OWN = SECTION_IDS.indexOf("ownership");
   const tags: [string, string, number, number][] = [
     ["YOUR DOMAIN", "REGISTERED TO YOU", -1.75, 1.15],
     ["YOUR CONTENT", "YOURS FROM DAY ONE", 1.75, 1.15],
     ["YOUR DATA", "EXPORTS WITH YOU, IN FULL", -1.75, -1.15],
     ["YOUR ACCOUNTS", "IN YOUR NAME", 1.75, -1.15],
   ];
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    flows.current?.children.forEach((d, i) => {
-      const [, , x, y] = tags[i % 4];
-      const k = (t * 0.32 + i * 0.25) % 1;
-      d.position.set(x * k * 0.82, 0.25 + (y - 0.25) * k * 0.82, 0.03);
-      ((d as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = Math.sin(k * Math.PI) * 0.8;
-    });
-  });
   return (
-    <group>
+    <>
+      {/* each plaque grows solidly out of the gem to its corner, staggered */}
       {tags.map(([k, sub, x, y], i) => (
-        <group key={k}>
-          <Line
-            points={[
-              [x * 0.25, 0.25 + (y - 0.25) * 0.25, 0],
-              [x * 0.8, 0.25 + (y - 0.25) * 0.8, 0],
-            ]}
-            color={EM_MID}
-            lineWidth={1}
-            transparent
-            opacity={0.25}
-          />
-          <PopKid delay={0.2 + i * 0.16} position={[x, y, 0.02]}>
-            <RPane w={2.0} h={0.72} r={0.12} color={PANEL_2} borderOpacity={0.35} />
-            <Label text={k} size={0.105} color="#eaf6ef" position={[0, 0.13, 0.01]} />
-            <Label text={sub} size={0.066} color={MUT} position={[0, -0.15, 0.01]} />
-          </PopKid>
-        </group>
+        <GemPart key={k} sec={OWN} to={[x, y, 0.02]} delay={i * 0.1}>
+          <RPane w={2.0} h={0.72} r={0.12} color={PANEL_2} borderOpacity={0.35} />
+          <Label text={k} size={0.105} color="#eaf6ef" position={[0, 0.13, 0.01]} />
+          <Label text={sub} size={0.066} color={MUT} position={[0, -0.15, 0.01]} />
+        </GemPart>
       ))}
-      <group ref={flows}>
-        {Array.from({ length: 8 }, (_, i) => (
-          <mesh key={i}>
-            <circleGeometry args={[0.045, 10]} />
-            <meshBasicMaterial color={EM_LIGHT} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
-          </mesh>
-        ))}
-      </group>
-      <Label text="MONTH-TO-MONTH · LEAVE ANYTIME" size={0.105} position={[0, -2.15, 0]} />
-    </group>
+      {/* caption grows in place at the bottom, last */}
+      <GemPart sec={OWN} to={[0, -2.4, 0]} from={[0, -2.4, 0]} delay={0.5}>
+        <Label text="MONTH-TO-MONTH · LEAVE ANYTIME" size={0.105} />
+      </GemPart>
+    </>
   );
 }
 
@@ -1492,21 +1529,25 @@ function IndustryGlyph({ kind }: { kind: number }) {
 }
 
 function IndustriesExhibit() {
+  const IND = SECTION_IDS.indexOf("industries");
   const cards = ["HOME SERVICES", "SPORTS REHAB & WELLNESS", "MED SPAS & AESTHETICS", "DENTAL & ORTHODONTICS", "PROFESSIONAL SERVICES"];
   return (
-    <group>
+    <>
+      {/* each service card grows out of the gem to its place in the column */}
       {cards.map((name, i) => (
-        <PopKid key={name} delay={0.15 + i * 0.13} position={[i % 2 === 0 ? -0.45 : 0.45, 1.6 - i * 0.78, 0]}>
+        <GemPart key={name} sec={IND} to={[i % 2 === 0 ? -0.45 : 0.45, 1.6 - i * 0.78, 0.02]} delay={i * 0.09}>
           <RPane w={2.85} h={0.66} r={0.12} color={PANEL_2} borderOpacity={0.3} />
           <group position={[-1.15, 0, 0.01]}>
             <IndustryGlyph kind={i} />
           </group>
           <Label text={name} size={0.092} position={[-0.85, 0.07, 0.01]} anchorX="left" />
           <Bar w={1.55} h={0.04} color={LINE} position={[-0.07, -0.16, 0.01]} />
-        </PopKid>
+        </GemPart>
       ))}
-      <Label text="BUILT FOR BUSINESSES THAT RUN ON QUALIFIED LEADS" size={0.095} position={[0, -2.3, 0]} />
-    </group>
+      <GemPart sec={IND} to={[0, -2.3, 0]} from={[0, -2.3, 0]} delay={0.6}>
+        <Label text="BUILT FOR BUSINESSES THAT RUN ON QUALIFIED LEADS" size={0.095} />
+      </GemPart>
+    </>
   );
 }
 
@@ -1771,22 +1812,27 @@ function Exhibits() {
           <V />
         </Fade>
       ))}
-      <Fade when={is("fuel")} position={at("fuel", -0.1)} slide={sl("fuel")}>
+      {/* FUEL — rebuilt: chips ring out of the gem once it arrives. */}
+      <GemStage position={[X_SIDE("fuel") * AX, -0.1, 0]}>
         <FuelExhibit />
-      </Fade>
+      </GemStage>
       <Fade when={is("deskii")} position={at("deskii", -0.05)} slide={sl("deskii")}>
         <DeskiiApp />
       </Fade>
       <Fade when={is("offer")} position={at("offer", 0)} slide={sl("offer")}>
         <OfferExhibit />
       </Fade>
-      {/* nudged outward so the left plaque column clears the copy tile */}
-      <Fade when={is("ownership")} position={[X_SIDE("ownership") * (AX + 0.3), 0, 0]} slide={sl("ownership")}>
+      {/* OWNERSHIP — rebuilt: plaques grow solidly out of the gem once it
+          arrives (stage sits on the gem's resting spot). Other sections keep
+          the Fade until each is rebuilt, one at a time. */}
+      <GemStage position={[X_SIDE("ownership") * (AX + 0.3), 0.25, 0]}>
         <OwnershipExhibit />
-      </Fade>
-      <Fade when={is("industries")} position={at("industries", -0.15)} slide={sl("industries")}>
+      </GemStage>
+      {/* INDUSTRIES — rebuilt: cards grow out of the gem (re-centered onto the
+          card column for this section). */}
+      <GemStage position={[X_SIDE("industries") * AX, -0.15, 0]}>
         <IndustriesExhibit />
-      </Fade>
+      </GemStage>
       <Fade when={is("process")} position={at("process", 0)} slide={sl("process")}>
         <ProcessExhibit />
       </Fade>
