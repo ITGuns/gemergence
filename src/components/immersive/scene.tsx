@@ -92,31 +92,25 @@ function Rig({ gemLight }: { gemLight: React.RefObject<THREE.PointLight | null> 
   return null;
 }
 
-/* ── Fade wrapper: births a vignette OUT OF the gem (and folds it back in) ──
- *
- * The exhibit's main body is born from the gem: at w=0 it's a zero-size point
- * at the gem's current world position; as w→1 it flies to its anchor and grows
- * to full size. On exit (w→0) it shrinks back into the gem — and because the
- * gem is already gliding to the next section, the panel visibly retracts into
- * the gem as it's carried away. The fold-in runs faster than the bloom so the
- * "swallow" reads as crisp, not draggy.
- */
+/* ── Fade wrapper: pops a vignette in/out by a live predicate ───── */
 function Fade({
   when,
   position = [0, 0, 0],
   speed = 4.2,
+  pop = 0.45,
+  slide = 0,
   delay = 0,
-  base = 1.05,
   debugId,
   children,
 }: {
   when: () => boolean;
   position?: [number, number, number];
   speed?: number;
+  pop?: number;
+  /** Horizontal glide distance: the exhibit flows in from this x-offset. */
+  slide?: number;
   /** Seconds after the active beat arrives before this element enters. */
   delay?: number;
-  /** Settled scale multiplier. */
-  base?: number;
   debugId?: string;
   children: React.ReactNode;
 }) {
@@ -125,49 +119,38 @@ function Fade({
     const g = ref.current;
     if (!g) return;
     const target = when() && state.clock.elapsedTime - act.since >= delay ? 1 : 0;
-    const cur = (g.userData.w as number) ?? 0;
-    const rate = target > cur ? speed : speed * 1.7; // fold back into the gem faster than it blooms
-    const w = cur + (target - cur) * Math.min(1, dt * rate);
-    g.userData.w = w;
     if (debugId && typeof window !== "undefined") {
-      const dbg = window as unknown as Record<string, Record<string, unknown>>;
-      dbg.__fades = dbg.__fades || {};
-      dbg.__fades[debugId] = {
+      const w = window as unknown as Record<string, Record<string, unknown>>;
+      w.__fades = w.__fades || {};
+      w.__fades[debugId] = {
         target,
-        w: +w.toFixed(3),
+        w: +(((g.userData.w as number) ?? 0)).toFixed(3),
         vis: g.visible,
         pos: [+g.position.x.toFixed(2), +g.position.y.toFixed(2)],
         scale: +g.scale.x.toFixed(2),
       };
     }
-    g.visible = w > 0.012;
+    const cur = (g.userData.w as number) ?? 0;
+    const w = cur + (target - cur) * Math.min(1, dt * speed);
+    g.userData.w = w;
+    g.visible = w > 0.02;
     if (!g.visible) return;
+    // ease-out-back: a ~5% overshoot so entrances pop instead of ooze
     const k = smooth(w);
-    // emerge from / retract into the gem: position lerps gem-center → anchor
-    const ax = position[0] * stage.fit;
-    const ay = position[1];
+    const back = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2);
+    const s = (0.7 + 0.3 * back) * 1.06 * stage.fit;
+    g.scale.setScalar(s);
     g.position.set(
-      gemState.x + (ax - gemState.x) * k,
-      gemState.y + (ay - gemState.y) * k,
-      position[2] * k
+      (position[0] + (1 - k) * slide) * stage.fit,
+      position[1] + (1 - k) * -pop,
+      position[2]
     );
-    g.scale.setScalar(Math.max(0.0001, backOut(k) * base * stage.fit));
     g.traverse((o) => {
-      const m = (o as THREE.Mesh).material as
-        | (THREE.Material & { opacity: number; isMeshStandardMaterial?: boolean })
-        | undefined;
+      const m = (o as THREE.Mesh).material as (THREE.Material & { opacity: number }) | undefined;
       if (m && typeof m.opacity === "number") {
         if (m.userData.bo === undefined) m.userData.bo = m.opacity;
         m.transparent = true;
-        m.opacity = (m.userData.bo as number) * clamp01(w * 1.25);
-        // The gem is the section's heart — a solid 3D object at the panel's
-        // center. Flat UI (panels/labels/chips) must paint OVER the gem body
-        // rather than be depth-occluded by it; only true 3D solids (price
-        // columns, process stones, boxes — meshStandardMaterial) keep depth.
-        if (!m.isMeshStandardMaterial) {
-          m.depthTest = false;
-          m.depthWrite = false;
-        }
+        m.opacity = (m.userData.bo as number) * w;
       }
     });
   });
@@ -177,11 +160,9 @@ function Fade({
 const backOut = (k: number) => 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2);
 
 /**
- * A part born from its PANEL: `delay` seconds after the active beat arrives it
- * emerges from the panel's center (the parent group's origin) and travels out
- * to `position`, scaling 0→1 with a pop. Opacity is left to the enclosing
- * Fade, so nesting never fights over materials. This is the second tier of the
- * hierarchy — the gem births the panel (Fade), the panel births its parts.
+ * Time-staggered child entrance: scales in with a pop `delay` seconds after
+ * the active beat arrives. Opacity is left to the enclosing Fade, so nesting
+ * never fights over materials.
  */
 function PopKid({
   delay,
@@ -196,13 +177,9 @@ function PopKid({
   useFrame((state) => {
     const g = ref.current;
     if (!g) return;
-    const k = clamp01((state.clock.elapsedTime - act.since - delay) * 3.2);
+    const k = clamp01((state.clock.elapsedTime - act.since - delay) * 3.4);
     g.visible = k > 0.01;
-    if (!g.visible) return;
-    const e = smooth(k);
-    g.scale.setScalar(Math.max(0.0001, backOut(e)));
-    // fly out from the panel center to the part's resting place
-    g.position.set(position[0] * e, position[1] * e, position[2] * e);
+    if (g.visible) g.scale.setScalar(Math.max(0.001, backOut(smooth(k))));
   });
   return (
     <group ref={ref} position={position}>
@@ -428,22 +405,19 @@ const gemState = { x: 0, y: 0 };
 
 /** Per-section gem pose. `dx` shifts along the exhibit side (mirrored with it). */
 const GEM_POSE: Record<SectionId, { y: number; s: number; dx?: number; dim?: boolean }> = {
-  // The gem now sits at the HEART of each exhibit (the source everything is
-  // born from), not floating above it. Its large additive glow halo lights
-  // the panels from within. y ≈ the exhibit's vertical center; dx ≈ 0.
   hero: { y: 0.1, s: 1.6 },
-  problem: { y: 0.3, s: 0.62, dim: true },
-  system: { y: 0.2, s: 0.7 },
-  fuel: { y: 0.0, s: 0.85 },
-  deskii: { y: 0.0, s: 0.62 },
-  offer: { y: 0.1, s: 0.72 },
+  problem: { y: 2.2, s: 0.5, dim: true },
+  system: { y: 2.5, s: 0.6 },
+  fuel: { y: -0.1, s: 0.85 },
+  deskii: { y: 2.7, s: 0.38 },
+  offer: { y: 1.2, s: 0.65, dx: -1.5 },
   ownership: { y: 0.25, s: 1.0, dx: 0.3 },
-  industries: { y: 0.05, s: 0.64 },
-  process: { y: 0.25, s: 0.58 },
-  proof: { y: 0.0, s: 0.62 },
-  plans: { y: 0.45, s: 0.6 },
-  why: { y: 0.35, s: 0.62 },
-  cta: { y: 0.6, s: 1.35 },
+  industries: { y: 2.45, s: 0.52 },
+  process: { y: 2.5, s: 0.5 },
+  proof: { y: 2.5, s: 0.5 },
+  plans: { y: 2.55, s: 0.5 },
+  why: { y: 2.4, s: 0.55 },
+  cta: { y: 0.8, s: 1.35 },
 };
 
 function Gem() {
@@ -535,7 +509,7 @@ function Gem() {
     if (rim.current) rim.current.opacity = 0.16 * dim.current;
     if (glow.current) {
       glow.current.scale.setScalar(4.2 + pulse.current * 1.4 + Math.sin(t * 1.5) * 0.18);
-      (glow.current.material as THREE.SpriteMaterial).opacity = 0.78 * dim.current;
+      (glow.current.material as THREE.SpriteMaterial).opacity = 0.9 * dim.current;
     }
     // shockwave ring expands and fades on every beat
     if (shock.current) {
@@ -1102,35 +1076,21 @@ function PillarTools() {
 const PILLAR_VIGNETTES = [PillarWebsite, PillarVisibility, PillarCapture, PillarFollowUp, PillarReviews, PillarReporting, PillarTools];
 
 /* ── The Deskii app showcase ────────────────────────────────────── */
-/**
- * A module card born from the WINDOW: as you scroll the pinned Deskii beat,
- * each card emerges from the app window's center (the DeskiiApp group origin)
- * and travels out to its slot. Scrubbed by journey.desk so it builds and
- * un-builds with the scroll. Opacity is handled by the enclosing deskii Fade.
- */
 function DeskiiModule({ i, label, children }: { i: number; label: string; children: React.ReactNode }) {
   const col = i % 3;
   const row = Math.floor(i / 3);
-  const slot: [number, number, number] = [-0.9 + col * 1.4, 0.48 - row * 1.4, 0.02];
-  const ref = useRef<THREE.Group>(null);
-  useFrame(() => {
-    const g = ref.current;
-    if (!g) return;
-    const active = SECTION_IDS[journey.sec] === "deskii";
-    const k = active ? clamp01((journey.desk * 6 - i - 0.1) * 1.4) : 0;
-    g.visible = k > 0.01;
-    if (!g.visible) return;
-    const e = smooth(k);
-    g.scale.setScalar(Math.max(0.0001, backOut(e)));
-    g.position.set(slot[0] * e, slot[1] * e, slot[2] * e);
-  });
   return (
-    <group ref={ref}>
+    <Fade
+      when={() => SECTION_IDS[journey.sec] === "deskii" && journey.desk * 6 >= i + 0.35}
+      position={[-0.9 + col * 1.4, 0.48 - row * 1.4, 0.02]}
+      pop={0.2}
+      speed={5.5}
+    >
       <RPane w={1.3} h={1.26} r={0.1} color="#1b2a21" borderOpacity={0.45} />
       <Label text={label} size={0.075} position={[-0.56, 0.48, 0.01]} anchorX="left" />
       <Bar w={1.14} h={0.01} color={LINE} position={[0, 0.36, 0.01]} />
       <group position={[0, -0.12, 0.01]}>{children}</group>
-    </group>
+    </Fade>
   );
 }
 
@@ -1796,48 +1756,50 @@ function CtaExhibit() {
 function Exhibits() {
   const at = (id: SectionId, y = -0.1): [number, number, number] => [X_SIDE(id) * AX, y, 0];
   const is = (id: SectionId) => () => SECTION_IDS[journey.sec] === id;
+  /** Exhibits flow in from the screen edge toward their anchor. */
+  const sl = (id: SectionId) => X_SIDE(id) * 0.7;
   const pillar = (i: number) => () =>
     SECTION_IDS[journey.sec] === "system" && Math.min(6, Math.floor(journey.sys * 7)) === i;
 
   return (
     <>
-      <Fade when={is("problem")} position={at("problem", 0.1)}>
+      <Fade when={is("problem")} position={at("problem", 0.1)} slide={sl("problem")}>
         <ProblemExhibit />
       </Fade>
       {PILLAR_VIGNETTES.map((V, i) => (
-        <Fade key={i} when={pillar(i)} position={at("system", -0.15)} speed={5}>
+        <Fade key={i} when={pillar(i)} position={at("system", -0.15)} speed={5} pop={0.35}>
           <V />
         </Fade>
       ))}
-      <Fade when={is("fuel")} position={at("fuel", -0.1)}>
+      <Fade when={is("fuel")} position={at("fuel", -0.1)} slide={sl("fuel")}>
         <FuelExhibit />
       </Fade>
-      <Fade when={is("deskii")} position={at("deskii", -0.05)}>
+      <Fade when={is("deskii")} position={at("deskii", -0.05)} slide={sl("deskii")}>
         <DeskiiApp />
       </Fade>
-      <Fade when={is("offer")} position={at("offer", 0)}>
+      <Fade when={is("offer")} position={at("offer", 0)} slide={sl("offer")}>
         <OfferExhibit />
       </Fade>
       {/* nudged outward so the left plaque column clears the copy tile */}
-      <Fade when={is("ownership")} position={[X_SIDE("ownership") * (AX + 0.3), 0, 0]}>
+      <Fade when={is("ownership")} position={[X_SIDE("ownership") * (AX + 0.3), 0, 0]} slide={sl("ownership")}>
         <OwnershipExhibit />
       </Fade>
-      <Fade when={is("industries")} position={at("industries", -0.15)}>
+      <Fade when={is("industries")} position={at("industries", -0.15)} slide={sl("industries")}>
         <IndustriesExhibit />
       </Fade>
-      <Fade when={is("process")} position={at("process", 0)}>
+      <Fade when={is("process")} position={at("process", 0)} slide={sl("process")}>
         <ProcessExhibit />
       </Fade>
-      <Fade when={is("proof")} position={at("proof", -0.1)}>
+      <Fade when={is("proof")} position={at("proof", -0.1)} slide={sl("proof")}>
         <ProofExhibit />
       </Fade>
-      <Fade when={is("plans")} position={at("plans", 0)}>
+      <Fade when={is("plans")} position={at("plans", 0)} slide={sl("plans")}>
         <PlansExhibit />
       </Fade>
-      <Fade when={is("why")} position={at("why", 0)}>
+      <Fade when={is("why")} position={at("why", 0)} slide={sl("why")}>
         <WhyExhibit />
       </Fade>
-      <Fade when={is("cta")} position={at("cta", 0.5)}>
+      <Fade when={is("cta")} position={at("cta", 0.5)} slide={sl("cta")}>
         <CtaExhibit />
       </Fade>
     </>
