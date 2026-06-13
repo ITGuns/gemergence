@@ -67,10 +67,149 @@ export default function ImmersiveHome() {
     return () => obs.disconnect();
   }, []);
 
+  // Flow: own the wheel on desktop. The first wheel movement immediately
+  // starts one continuous ease-out glide to the next stop in that direction —
+  // no raw-scroll-then-correct hitch. Reversing mid-glide retargets at once;
+  // sustained input chains through stops; touch/scrollbar cancel the glide.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    let animating = false;
+    let from = 0;
+    let to = 0;
+    let begin = 0;
+    let dur = 0;
+    let acc = 0;
+    let lastWheel = 0;
+    let coolUntil = 0;
+
+    const stops = () => {
+      const y = window.scrollY;
+      const t: number[] = [];
+      document
+        .querySelectorAll<HTMLElement>(".journey > section, .journey > div:not([aria-hidden]), .journey .snap-beat")
+        .forEach((el) => t.push(Math.round(el.getBoundingClientRect().top + y)));
+      t.push(document.documentElement.scrollHeight - window.innerHeight);
+      return t.sort((a, b) => a - b);
+    };
+    const nextStop = (dir: number, fromY: number) => {
+      const ts = stops();
+      return dir > 0 ? ts.find((t) => t > fromY + 2) : [...ts].reverse().find((t) => t < fromY - 2);
+    };
+
+    // ease-out: motion is visible within the first frames (response), and
+    // the landing is gentle (composure).
+    const ease = (k: number) => 1 - Math.pow(1 - k, 3);
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - begin) / dur);
+      window.scrollTo(0, from + (to - from) * ease(k));
+      if (k < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        animating = false;
+        coolUntil = now + 360; // swallow the inertia tail
+      }
+    };
+    const go = (target: number) => {
+      from = window.scrollY;
+      to = target;
+      if (Math.abs(to - from) < 2) return;
+      begin = performance.now();
+      dur = Math.min(900, 480 + Math.abs(to - from) * 0.25);
+      if (!animating) {
+        animating = true;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    const cancelGlide = () => {
+      if (!animating) return;
+      cancelAnimationFrame(raf);
+      animating = false;
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) return; // browser zoom
+      if (!window.matchMedia("(min-width: 1024px)").matches) return;
+      // overflowing active section (no CSS zoom support, heavy browser zoom):
+      // leave native scrolling alone so all content stays reachable.
+      const active = secEls.current[journey.sec];
+      const sec = active && (active.matches("section") ? active : active.querySelector("section"));
+      if (sec && sec.scrollHeight > window.innerHeight + 4) return;
+      const d =
+        e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
+      if (d === 0) return;
+      e.preventDefault();
+      const now = performance.now();
+      if (now - lastWheel > 220) acc = 0; // a new gesture
+      lastWheel = now;
+
+      if (animating) {
+        if (Math.sign(d) !== Math.sign(to - from)) {
+          // reversed intent: retarget immediately from where we are
+          acc = 0;
+          const t = nextStop(Math.sign(d), window.scrollY);
+          if (t !== undefined) go(t);
+        } else {
+          // sustained same-direction input chains to the following stop
+          acc += d;
+          if (Math.abs(acc) > 360) {
+            acc = 0;
+            const t = nextStop(Math.sign(d), to);
+            if (t !== undefined) go(t);
+          }
+        }
+        return;
+      }
+      // inside the post-glide cooldown only a deliberate burst counts
+      if (now < coolUntil && Math.abs(d) < 100) return;
+      acc += d;
+      if (Math.abs(acc) < 40) return;
+      const dir = Math.sign(acc);
+      acc = 0;
+      const t = nextStop(dir, window.scrollY);
+      if (t !== undefined) go(t);
+    };
+
+    // keyboard travels the same stops with the same glide
+    const onKey = (e: KeyboardEvent) => {
+      if (!window.matchMedia("(min-width: 1024px)").matches) return;
+      const el = e.target as HTMLElement;
+      if (
+        el &&
+        (el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA" ||
+          el.tagName === "SELECT" ||
+          el.tagName === "BUTTON" ||
+          el.tagName === "A" ||
+          el.isContentEditable)
+      )
+        return;
+      const down = e.key === "PageDown" || e.key === "ArrowDown" || (e.key === " " && !e.shiftKey);
+      const up = e.key === "PageUp" || e.key === "ArrowUp" || (e.key === " " && e.shiftKey);
+      if (!down && !up) return;
+      const t = nextStop(down ? 1 : -1, animating ? to : window.scrollY);
+      if (t === undefined) return;
+      e.preventDefault();
+      go(t);
+    };
+
+    const opts = { passive: false } as AddEventListenerOptions;
+    window.addEventListener("wheel", onWheel, opts);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("touchstart", cancelGlide, { passive: true });
+    window.addEventListener("pointerdown", cancelGlide, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("touchstart", cancelGlide);
+      window.removeEventListener("pointerdown", cancelGlide);
+    };
+  }, []);
+
   // Settle: once scrolling goes idle, glide to the nearest section top (or
   // beat marker inside a pinned section) so the page always rests composed.
-  // JS instead of CSS mandatory snap: snap rubber-bands notched mice, and a
-  // smooth scrollTo stays interruptible by the user on every input type.
+  // The safety net for scrollbar drags and any input the flow doesn't own.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const w = window as Window & { __gfSettling?: boolean };
