@@ -80,8 +80,12 @@ export default function ImmersiveHome() {
     let begin = 0;
     let dur = 0;
     let acc = 0;
+    let revAcc = 0;
     let lastWheel = 0;
-    let coolUntil = 0;
+    let prevMag = 0;
+    // One gesture = one stop. After a glide, the wheel must go quiet before
+    // the next gesture counts — this is what swallows trackpad inertia tails.
+    let armed = true;
 
     const stops = () => {
       const y = window.scrollY;
@@ -98,8 +102,8 @@ export default function ImmersiveHome() {
     };
 
     // ease-out: motion is visible within the first frames (response), and
-    // the landing is gentle (composure).
-    const ease = (k: number) => 1 - Math.pow(1 - k, 3);
+    // the long deceleration makes the landing read as deliberate.
+    const ease = (k: number) => 1 - Math.pow(1 - k, 4);
     const tick = (now: number) => {
       const k = Math.min(1, (now - begin) / dur);
       window.scrollTo(0, from + (to - from) * ease(k));
@@ -107,15 +111,16 @@ export default function ImmersiveHome() {
         raf = requestAnimationFrame(tick);
       } else {
         animating = false;
-        coolUntil = now + 360; // swallow the inertia tail
       }
     };
     const go = (target: number) => {
       from = window.scrollY;
       to = target;
+      revAcc = 0;
+      armed = false;
       if (Math.abs(to - from) < 2) return;
       begin = performance.now();
-      dur = Math.min(900, 480 + Math.abs(to - from) * 0.25);
+      dur = Math.min(1400, 650 + Math.abs(to - from) * 0.45);
       if (!animating) {
         animating = true;
         raf = requestAnimationFrame(tick);
@@ -140,30 +145,37 @@ export default function ImmersiveHome() {
       if (d === 0) return;
       e.preventDefault();
       const now = performance.now();
-      if (now - lastWheel > 220) acc = 0; // a new gesture
+      const gapMs = now - lastWheel;
       lastWheel = now;
+      const mag = Math.abs(d);
+      const decaying = mag < prevMag;
+      prevMag = mag;
 
       if (animating) {
         if (Math.sign(d) !== Math.sign(to - from)) {
-          // reversed intent: retarget immediately from where we are
-          acc = 0;
-          const t = nextStop(Math.sign(d), window.scrollY);
-          if (t !== undefined) go(t);
-        } else {
-          // sustained same-direction input chains to the following stop
-          acc += d;
-          if (Math.abs(acc) > 360) {
-            acc = 0;
-            const t = nextStop(Math.sign(d), to);
+          // reversed intent (inertia never changes sign): retarget once the
+          // reversal is deliberate, not trackpad jitter
+          revAcc += Math.abs(d);
+          if (revAcc >= 80) {
+            const t = nextStop(Math.sign(d), window.scrollY);
             if (t !== undefined) go(t);
           }
+        } else {
+          revAcc = 0; // same direction mid-glide is swallowed — one stop per gesture
         }
         return;
       }
-      // inside the post-glide cooldown only a deliberate burst counts
-      if (now < coolUntil && Math.abs(d) < 100) return;
+
+      // Re-arm only on a genuinely new gesture: the wheel went quiet, or a
+      // fresh non-decaying notch-strength push at human cadence. Inertia
+      // tails decay event over event, so they never re-arm.
+      if (!armed) {
+        if (gapMs > 200 || (mag >= 100 && gapMs > 120 && !decaying)) armed = true;
+        else return;
+      }
+      if (gapMs > 220) acc = 0;
       acc += d;
-      if (Math.abs(acc) < 40) return;
+      if (Math.abs(acc) < 60) return;
       const dir = Math.sign(acc);
       acc = 0;
       const t = nextStop(dir, window.scrollY);
