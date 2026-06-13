@@ -83,8 +83,10 @@ export default function ImmersiveHome() {
     let revAcc = 0;
     let lastWheel = 0;
     let prevMag = 0;
-    // One gesture = one stop. After a glide, the wheel must go quiet before
-    // the next gesture counts — this is what swallows trackpad inertia tails.
+    let heldRun = 0; // consecutive non-decaying wheel events
+    // One gesture = one stop. After a glide the wheel dis-arms; it re-arms only
+    // on a genuinely new gesture, so a flick's decaying inertia tail can't fire
+    // a second glide — but sustained scrolling (which holds its magnitude) does.
     let armed = true;
 
     const stops = () => {
@@ -148,7 +150,12 @@ export default function ImmersiveHome() {
       const gapMs = now - lastWheel;
       lastWheel = now;
       const mag = Math.abs(d);
-      const decaying = mag < prevMag;
+      // "held" = a non-trivial magnitude that didn't drop. A continuous scroll
+      // holds its magnitude; an inertia tail decays AND flattens to near-zero,
+      // so the >=10 floor keeps the spent tail's constant 1-2px crawl from
+      // counting as sustained input.
+      const held = mag >= 10 && mag >= prevMag * 0.85;
+      heldRun = gapMs > 200 ? 0 : held ? heldRun + 1 : 0;
       prevMag = mag;
 
       if (animating) {
@@ -166,11 +173,14 @@ export default function ImmersiveHome() {
         return;
       }
 
-      // Re-arm only on a genuinely new gesture: the wheel went quiet, or a
-      // fresh non-decaying notch-strength push at human cadence. Inertia
-      // tails decay event over event, so they never re-arm.
+      // Re-arm on a genuinely new gesture, never on a spent inertia tail.
+      // A tail is weak (mag ≤ ~8) and only decays, so every path below
+      // demands real magnitude: a meaningful push after a pause, sustained
+      // non-decaying input (continuous scroll), or a hard notch. (Magnitude
+      // is required even on the pause path because a busy main thread can
+      // space a decaying tail's events out past 200ms.)
       if (!armed) {
-        if (gapMs > 200 || (mag >= 100 && gapMs > 120 && !decaying)) armed = true;
+        if ((gapMs > 200 && mag >= 14) || heldRun >= 3 || (mag >= 100 && gapMs > 120 && held)) armed = true;
         else return;
       }
       if (gapMs > 220) acc = 0;
