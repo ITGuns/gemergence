@@ -93,7 +93,7 @@ export default function ImmersiveHome() {
       const y = window.scrollY;
       const t: number[] = [];
       document
-        .querySelectorAll<HTMLElement>(".journey > section, .journey > div:not([aria-hidden]), .journey .snap-beat")
+        .querySelectorAll<HTMLElement>(".journey > section, .journey .snap-beat")
         .forEach((el) => t.push(Math.round(el.getBoundingClientRect().top + y)));
       t.push(document.documentElement.scrollHeight - window.innerHeight);
       return t.sort((a, b) => a - b);
@@ -253,12 +253,14 @@ export default function ImmersiveHome() {
         rest = y;
         return;
       }
-      // Stops: section tops, pinned-wrapper tops, beats inside pins, and the
-      // end of the document so the footer is a first-class resting place.
-      // (The canvas wrapper div is aria-hidden — excluded.)
+      // Stops: section tops, the per-beat markers inside the pinned sections,
+      // and the end of the document (footer is a first-class resting place).
+      // The pinned WRAPPER tops are intentionally excluded — their first beat
+      // already lands on the first pillar, so counting the wrapper top too
+      // produced a duplicate stop (a dead "extra swipe" before the 2nd pillar).
       const targets: number[] = [];
       document
-        .querySelectorAll<HTMLElement>(".journey > section, .journey > div:not([aria-hidden]), .journey .snap-beat")
+        .querySelectorAll<HTMLElement>(".journey > section, .journey .snap-beat")
         .forEach((el) => targets.push(Math.round(el.getBoundingClientRect().top + y)));
       targets.push(document.documentElement.scrollHeight - vh);
       // Directional: a deliberate scroll commits to the next stop in that
