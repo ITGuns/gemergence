@@ -18,8 +18,8 @@ const LINKS = [
 ];
 
 export function SiteFooter() {
-  // The immersive journey at "/" runs dark; the footer follows it.
-  const dark = usePathname() === "/";
+  // The immersive journey at "/immersive" runs dark; the footer follows it.
+  const dark = usePathname() === "/immersive";
   const mut = dark ? "text-band-mut" : "text-ink2";
   const strong = dark ? "text-band-ink" : "text-ink";
   const accent = dark ? "text-[#7fc8ad]" : "text-emerald";

@@ -4,10 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-/** Floating pill to switch between the immersive and classic homepages. */
+/** Floating pill to switch between the three homepage variants. */
+const VARIANTS = [
+  { href: "/", label: "Daylight" },
+  { href: "/immersive", label: "Immersive" },
+  { href: "/classic", label: "Classic" },
+] as const;
+
 export function VersionSwitcher() {
   const pathname = usePathname();
-  const onImmersive = pathname === "/";
+  const onImmersive = pathname === "/immersive";
   // On the immersive journey the pill is an entry/exit affordance: visible
   // near the top and once the footer arrives, tucked away mid-journey so it
   // never sits on tile content.
@@ -30,11 +36,10 @@ export function VersionSwitcher() {
     };
   }, [onImmersive]);
 
-  if (pathname !== "/" && pathname !== "/classic") return null;
+  if (!VARIANTS.some((v) => v.href === pathname)) return null;
   const tucked = away && onImmersive;
 
-  const base =
-    "rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors";
+  const base = "rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors";
   return (
     <div
       className={`on-dark-focus fixed bottom-5 left-5 z-[60] flex items-center gap-1 rounded-full border border-band-line bg-band/90 p-1 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-[translate,opacity,visibility] duration-300 ${
@@ -43,20 +48,19 @@ export function VersionSwitcher() {
       role="navigation"
       aria-label="Site version"
     >
-      <Link
-        href="/"
-        aria-current={onImmersive ? "page" : undefined}
-        className={`${base} ${onImmersive ? "bg-[#7fc8ad] text-band" : "text-band-mut hover:text-band-ink"}`}
-      >
-        Immersive
-      </Link>
-      <Link
-        href="/classic"
-        aria-current={!onImmersive ? "page" : undefined}
-        className={`${base} ${!onImmersive ? "bg-band-ink text-band" : "text-band-mut hover:text-band-ink"}`}
-      >
-        Classic
-      </Link>
+      {VARIANTS.map((v) => {
+        const active = pathname === v.href;
+        return (
+          <Link
+            key={v.href}
+            href={v.href}
+            aria-current={active ? "page" : undefined}
+            className={`${base} ${active ? "bg-[#7fc8ad] text-band" : "text-band-mut hover:text-band-ink"}`}
+          >
+            {v.label}
+          </Link>
+        );
+      })}
     </div>
   );
 }

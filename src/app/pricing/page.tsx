@@ -4,6 +4,7 @@ import { Reveal } from "@/components/reveal";
 import { ArrowRight, Check, Minus } from "@/components/icons";
 import { RevenueCalculator } from "@/components/calculator";
 import { PRICING_PAGE, FUEL } from "@/lib/content";
+import { CHECKOUT } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Pricing — real prices, published",
@@ -104,13 +105,38 @@ export default function PricingPage() {
                     )}
                   </div>
 
-                  <Link
-                    href="/audit"
-                    className={`btn mt-7 w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
-                  >
-                    Start with the audit
-                    <ArrowRight size={15} />
-                  </Link>
+                  {/* Fixed-price tiers with a Square link let visitors subscribe
+                      on the spot; the audit stays available as a softer path.
+                      Custom "From $…" tiers keep the quote flow only. */}
+                  {CHECKOUT[t.name] ? (
+                    <div className="mt-7">
+                      <a
+                        href={CHECKOUT[t.name] as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`btn w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
+                      >
+                        Subscribe — {t.price}
+                        {t.period}
+                        <ArrowRight size={15} />
+                      </a>
+                      <Link
+                        href="/audit"
+                        className="link-arrow mt-3 justify-center text-[0.9rem]"
+                      >
+                        Prefer a call first? Start with a free audit
+                        <ArrowRight size={13} />
+                      </Link>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/audit"
+                      className={`btn mt-7 w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
+                    >
+                      Start with the audit
+                      <ArrowRight size={15} />
+                    </Link>
+                  )}
                 </article>
               </Reveal>
             ))}

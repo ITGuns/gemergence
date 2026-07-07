@@ -24,6 +24,11 @@
   color-scheme: light;
 }
 
+/* Deep-linked anchors (e.g. /#system) clear the fixed 64px nav. */
+html {
+  scroll-padding-top: 4.5rem;
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);
@@ -379,12 +384,76 @@ html.js .reveal.vis {
 
 /* ════ Immersive journey: flow pass (unlayered → wins over components/utilities) ════ */
 
-/* Type scales with viewport HEIGHT too, so tiles fit short screens. */
+/* Type scales with viewport HEIGHT too, so sections fit short screens.
+   Redesign pass: open typography carries the structure now, so display
+   sizes step UP — confident scale is the point. */
 .journey .h1 {
-  font-size: min(clamp(2.5rem, 5.4vw, 4.75rem), calc(1rem + 6.2vh));
+  font-size: min(clamp(3rem, 6.2vw, 5.6rem), calc(1rem + 7vh));
 }
 .journey .h2 {
-  font-size: min(clamp(1.9rem, 3.4vw, 3.05rem), calc(0.85rem + 3.4vh));
+  font-size: min(clamp(2.2rem, 4.1vw, 3.7rem), calc(0.8rem + 4.1vh));
+}
+
+/* ── Open-typography chapter structure ── */
+/* Numbered hairline list: the structured replacement for bullet walls. */
+.chapter-list {
+  display: grid;
+  gap: 0 2.5rem;
+}
+.chapter-list > li {
+  border-top: 1px solid var(--color-band-line);
+  padding-block: 0.7rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+}
+.chapter-list .idx {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #7fc8ad;
+  flex-shrink: 0;
+}
+
+/* ── Wayfinding rail: 13 ticks + current chapter, right edge, lg+ ── */
+.rail {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+@media (min-width: 1024px) {
+  .rail {
+    display: flex;
+  }
+}
+.rail button {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: var(--color-band-line);
+  transition: background-color 0.3s ease, width 0.3s ease;
+}
+.rail button:hover {
+  background: var(--color-band-mut);
+}
+.rail button[aria-current="true"] {
+  width: 30px;
+  background: #7fc8ad;
+}
+.rail .rail-num {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: var(--color-band-mut);
+  margin-top: 0.6rem;
 }
 
 /* Short-viewport compression: scale whole tiles down before they overflow. */

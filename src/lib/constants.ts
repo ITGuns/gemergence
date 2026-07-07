@@ -17,6 +17,19 @@ export const SITE = {
   social: [] as { label: string; href: string }[],
 };
 
+// Square hosted subscription checkout links. Each is a reusable Square-hosted
+// URL that subscribes + charges the buyer (Square keeps the card on file and
+// bills monthly) — no card data touches this site. Create each in the Square
+// Dashboard (Payment Links → recurring/subscription) or via CreatePaymentLink,
+// then paste the https://square.link/… URL for the matching plan name here.
+// While a value is null, that tier keeps the audit/quote flow — no broken link
+// ever goes live. Only fixed-price recurring tiers belong here; the custom
+// "From $…" tiers stay quote-only.
+export const CHECKOUT: Record<string, string | null> = {
+  Foundation: null,
+  Growth: null,
+};
+
 export const INTAKE_KEY = "gemfield:last-intake";
 export const DRAFT_KEY = "gemfield:audit-draft";
 

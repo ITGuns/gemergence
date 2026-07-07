@@ -9,11 +9,11 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { ArrowRight, Check } from "@/components/icons";
 import {
   HERO, PROBLEM, SYSTEM, FUEL, DESKII, OFFER, OWNERSHIP,
-  INDUSTRIES, PROCESS, PROOF, PLANS, WHY, FINAL_CTA,
+  INDUSTRIES, PROCESS, PLANS, WHY, FINAL_CTA,
 } from "@/lib/content";
 import { AuditForm } from "@/components/audit-form";
 import { journey, clamp01, pinProgress } from "./journey-store";
@@ -24,6 +24,53 @@ const JourneyScene = dynamic(() => import("./scene"), { ssr: false });
 const col = (side: 1 | -1) =>
   side === 1 ? "lg:col-span-6" : "lg:col-span-6 lg:col-start-7";
 
+/** Wayfinding: one tick per journey stop, current chapter read out below. */
+const CHAPTERS = [
+  "Start", "The problem", "The system", "Growth fuel", "Deskii", "The offer",
+  "Industries", "How it works", "Plans", "Trust", "Begin",
+];
+
+/** Crossfade styles for the 2-beat pinned chapters (process/proof, trust). */
+const beatStyle = (on: boolean) =>
+  ({
+    opacity: on ? 1 : 0,
+    transform: on ? "none" : "translateY(14px)",
+    pointerEvents: on ? "auto" : "none",
+  }) as const;
+
+function ChapterRail({
+  sec,
+  els,
+}: {
+  sec: number;
+  els: RefObject<(HTMLElement | null)[]>;
+}) {
+  return (
+    <nav className="rail" aria-label="Journey chapters">
+      {CHAPTERS.map((label, i) => (
+        <button
+          key={label}
+          type="button"
+          title={label}
+          aria-label={`Go to ${label}`}
+          aria-current={sec === i ? "true" : undefined}
+          onClick={() => {
+            const el = els.current?.[i];
+            if (el)
+              window.scrollTo({
+                top: el.getBoundingClientRect().top + window.scrollY,
+                behavior: "smooth",
+              });
+          }}
+        />
+      ))}
+      <span className="rail-num">
+        {String(sec + 1).padStart(2, "0")} / {CHAPTERS.length}
+      </span>
+    </nav>
+  );
+}
+
 export default function ImmersiveHome() {
   const journeyEl = useRef<HTMLDivElement>(null);
   const canvasWrap = useRef<HTMLDivElement>(null);
@@ -33,6 +80,8 @@ export default function ImmersiveHome() {
   };
   const [pillar, setPillar] = useState(0);
   const [deskMod, setDeskMod] = useState(0);
+  const [sec, setSec] = useState(0);
+  const [trustBeat, setTrustBeat] = useState(0);
   const [canvasOn, setCanvasOn] = useState(false);
   const [past, setPast] = useState(false);
 
@@ -332,12 +381,16 @@ export default function ImmersiveHome() {
         });
         journey.sec = idx;
         journey.t = t;
+        setSec((p) => (p === idx ? p : idx));
         journey.sys = pinProgress(secEls.current[2] as HTMLElement);
         journey.desk = pinProgress(secEls.current[4] as HTMLElement);
+        journey.trust = pinProgress(secEls.current[9] as HTMLElement);
         const pi = Math.min(6, Math.floor(journey.sys * 7));
         setPillar((p) => (p === pi ? p : pi));
         const di = Math.min(5, Math.floor(journey.desk * 6));
         setDeskMod((p) => (p === di ? p : di));
+        const tb = journey.trust < 0.5 ? 0 : 1;
+        setTrustBeat((p) => (p === tb ? p : tb));
       });
     };
     const onMove = (e: PointerEvent) => {
@@ -361,22 +414,23 @@ export default function ImmersiveHome() {
       <div ref={canvasWrap} className="pointer-events-none fixed inset-0 z-0" aria-hidden>
         {canvasOn && <JourneyScene paused={past} onContextLost={() => setCanvasOn(false)} />}
       </div>
+      {!past && <ChapterRail sec={sec} els={secEls} />}
 
       {/* 0 — HERO (copy left) */}
-      <section ref={reg(0)} className="relative z-10 flex min-h-screen items-center pt-16">
+      <section ref={reg(0)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[38vh]">
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#0a0f0c]/95 via-[#0a0f0c]/70 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#0a0f0c]/90 via-[#0a0f0c]/55 to-transparent"
           aria-hidden="true"
         />
         <div className="container-g relative grid gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-6" data-reveal>
+          <div className="lg:col-span-7" data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{HERO.eyebrow}</p>
-            <h1 className="font-display h1 mt-5 text-white">
+            <h1 className="font-display h1 mt-6 text-white">
               {HERO.h1a} <span className="text-[#7fc8ad]">{HERO.h1b}</span> {HERO.h1c}
             </h1>
-            <p className="measure mt-6 text-[1.1rem] leading-relaxed text-band-mut">{HERO.sub}</p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/audit" className="btn btn-primary !px-6 !py-4 text-[1rem]">
+            <p className="measure mt-7 max-w-xl text-[1.12rem] leading-relaxed text-band-mut">{HERO.sub}</p>
+            <div className="mt-9 flex flex-wrap items-center gap-5">
+              <Link href="/audit" className="btn btn-primary !px-7 !py-4 text-[1.02rem]">
                 {HERO.primaryCta}
                 <ArrowRight size={16} />
               </Link>
@@ -385,7 +439,7 @@ export default function ImmersiveHome() {
                 <ArrowRight size={15} />
               </Link>
             </div>
-            <ul className="mt-10 flex flex-wrap gap-x-5 gap-y-2 text-[0.85rem] font-medium text-band-mut">
+            <ul className="mt-12 flex max-w-xl flex-wrap gap-x-6 gap-y-2.5 border-t border-band-line pt-5 text-[0.88rem] font-medium text-band-mut">
               {HERO.trustPoints.map((t) => (
                 <li key={t} className="flex items-center gap-2">
                   <span className="h-1 w-1 rounded-full bg-[#7fc8ad]" aria-hidden="true" />
@@ -401,18 +455,18 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 1 — PROBLEM (copy right) */}
-      <section ref={reg(1)} className="relative z-10 flex min-h-screen items-center">
+      {/* 1 — PROBLEM (copy right, open typography — the copy sits on the scene) */}
+      <section ref={reg(1)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`glass max-w-2xl p-8 sm:p-10 ${col(-1)}`}>
+          <div className={`max-w-2xl ${col(-1)}`} data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{PROBLEM.eyebrow}</p>
-            <h2 className="font-display h2 mt-4 text-white">{PROBLEM.h}</h2>
-            <p className="mt-6 leading-relaxed text-band-mut">{PROBLEM.body}</p>
-            <ul className="mt-6 grid gap-x-8 gap-y-2 sm:grid-cols-2">
-              {PROBLEM.points.map((p) => (
-                <li key={p} className="flex items-baseline gap-2.5 text-[0.95rem] font-medium text-band-ink">
-                  <span className="text-band-mut" aria-hidden="true">–</span>
-                  {p}
+            <h2 className="font-display h2 mt-5 text-white">{PROBLEM.h}</h2>
+            <p className="mt-7 max-w-xl leading-relaxed text-band-mut">{PROBLEM.body}</p>
+            <ul className="chapter-list mt-10 sm:grid-cols-2">
+              {PROBLEM.points.map((p, i) => (
+                <li key={p}>
+                  <span className="idx">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="text-[0.95rem] font-medium text-band-ink">{p}</span>
                 </li>
               ))}
             </ul>
@@ -432,16 +486,16 @@ export default function ImmersiveHome() {
             aria-hidden
           />
         ))}
-        <section className="sticky top-0 z-10 flex h-screen items-center" id="system">
+        <section className="sticky top-0 z-10 flex h-screen items-center max-lg:items-start max-lg:pt-[24vh]" id="system">
           <div className="container-g grid gap-10 lg:grid-cols-12">
-            <div className="glass max-w-xl p-8 sm:p-10 lg:col-span-6">
+            <div className="max-w-xl lg:col-span-6" data-reveal>
               <p className="eyebrow !text-[#7fc8ad]">{SYSTEM.eyebrow}</p>
-              <h2 className="font-display h2 mt-4 text-white">{SYSTEM.h}</h2>
-              <div className="relative mt-8 min-h-[200px]" aria-hidden="true">
+              <h2 className="font-display h2 mt-5 text-white">{SYSTEM.h}</h2>
+              <div className="relative mt-10 min-h-[300px] border-t border-band-line pt-7 lg:min-h-[210px]" aria-hidden="true">
                 {SYSTEM.pillars.map((pl, i) => (
                   <div
                     key={pl.n}
-                    className="absolute inset-0 transition-all duration-500"
+                    className="absolute inset-x-0 top-7 transition-all duration-500"
                     style={{
                       opacity: pillar === i ? 1 : 0,
                       transform: pillar === i ? "none" : "translateY(14px)",
@@ -449,8 +503,8 @@ export default function ImmersiveHome() {
                     }}
                   >
                     <p className="mono-num text-[0.85rem] font-medium text-[#7fc8ad]">{pl.n} / 07</p>
-                    <h3 className="font-display mt-2 text-[1.6rem] text-white">{pl.name}</h3>
-                    <p className="mt-3 leading-relaxed text-band-mut">{pl.copy}</p>
+                    <h3 className="font-display mt-2.5 text-[1.9rem] text-white">{pl.name}</h3>
+                    <p className="mt-3.5 max-w-lg leading-relaxed text-band-mut">{pl.copy}</p>
                   </div>
                 ))}
               </div>
@@ -461,7 +515,7 @@ export default function ImmersiveHome() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 flex gap-1.5" aria-hidden>
+              <div className="mt-7 flex gap-1.5" aria-hidden>
                 {SYSTEM.pillars.map((pl, i) => (
                   <span
                     key={pl.n}
@@ -469,32 +523,32 @@ export default function ImmersiveHome() {
                   />
                 ))}
               </div>
-              <p className="mt-5 text-[0.85rem] text-band-mut">{SYSTEM.body}</p>
+              <p className="mt-5 max-w-lg text-[0.88rem] leading-relaxed text-band-mut">{SYSTEM.body}</p>
             </div>
           </div>
         </section>
       </div>
 
-      {/* 3 — GROWTH FUEL (copy right) */}
-      <section ref={reg(3)} className="relative z-10 flex min-h-screen items-center">
+      {/* 3 — GROWTH FUEL (copy right, open typography) */}
+      <section ref={reg(3)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`glass max-w-2xl p-6 sm:p-8 ${col(-1)}`}>
+          <div className={`max-w-2xl ${col(-1)}`} data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{FUEL.eyebrow}</p>
-            <h2 className="font-display h2 mt-3 text-white">{FUEL.h}</h2>
-            <p className="mt-4 text-[0.95rem] leading-relaxed text-band-mut">{FUEL.body}</p>
-            <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+            <h2 className="font-display h2 mt-5 text-white">{FUEL.h}</h2>
+            <p className="mt-6 max-w-xl leading-relaxed text-band-mut">{FUEL.body}</p>
+            <ul className="mt-9 grid gap-x-10 gap-y-4 sm:grid-cols-2">
               {FUEL.channels.map((c) => (
-                <li key={c.name} className="border-l border-band-line pl-3.5">
-                  <span className="block text-[0.9rem] font-bold text-band-ink">{c.name}</span>
-                  <span className="text-[0.82rem] leading-snug text-band-mut">{c.copy}</span>
+                <li key={c.name} className="border-t border-band-line pt-3">
+                  <span className="block text-[0.95rem] font-bold text-band-ink">{c.name}</span>
+                  <span className="mt-0.5 block text-[0.86rem] leading-snug text-band-mut">{c.copy}</span>
                 </li>
               ))}
             </ul>
-            <div className="mt-4 space-y-1.5 border-l-2 border-[#7fc8ad] pl-5 text-[0.88rem]">
+            <div className="mt-8 space-y-1.5 border-l-2 border-[#7fc8ad] pl-5 text-[0.92rem]">
               <p className="font-semibold text-band-ink">{FUEL.eligibility}</p>
               <p className="text-band-mut">{FUEL.feeLine}</p>
             </div>
-            <Link href="/marketing" className="link-arrow mt-4 !text-[#7fc8ad] text-[0.98rem]">
+            <Link href="/marketing" className="link-arrow mt-7 !text-[#7fc8ad] text-[0.98rem]">
               {FUEL.cta}
               <ArrowRight size={15} />
             </Link>
@@ -502,114 +556,72 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 4 — DESKII (pinned, copy left) */}
-      <div ref={reg(4)} className="relative h-[360vh]">
-        {/* snap targets: scrolling settles on each module beat (desk = (i+.5)/N).
-            260vh = wrapper 360vh minus one viewport (pinProgress denominator). */}
-        {DESKII.features.map((f, i) => (
-          <div
-            key={f.name}
-            className="snap-beat"
-            style={{ top: `${((i + 0.5) / DESKII.features.length) * 260}vh` }}
-            aria-hidden
-          />
-        ))}
-        <section className="sticky top-0 z-10 flex h-screen items-center">
-          <div className="container-g grid gap-10 lg:grid-cols-12">
-            <div className="glass max-w-xl p-6 sm:p-8 lg:col-span-6">
-              <p className="eyebrow !text-[#7fc8ad]">{DESKII.eyebrow}</p>
-              <h2 className="font-display h2 mt-3 text-white">{DESKII.h}</h2>
-              <p className="mt-4 text-[0.95rem] leading-relaxed text-band-mut">{DESKII.body}</p>
-              <ul className="mt-4 space-y-1.5 text-[0.92rem] leading-snug">
-                {DESKII.features.map((f, i) => (
-                  <li key={f.name} className="transition-colors duration-300">
-                    <span className={`font-bold ${deskMod === i ? "text-[#7fc8ad]" : "text-band-ink"}`}>{f.name}</span>
-                    <span className="text-band-mut"> — {f.copy}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/deskii" className="link-arrow mt-4 !text-[#7fc8ad] text-[0.98rem]">
-                {DESKII.cta}
-                <ArrowRight size={15} />
-              </Link>
-              <p className="mono-num mt-4 border-t border-band-line pt-3 text-[0.75rem] text-band-mut">
-                Deskii — the client command center every Gemfield engagement runs on
-              </p>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* 5 — OFFER (copy right) */}
-      <section ref={reg(5)} className="relative z-10 flex min-h-screen items-center">
+      {/* 4 — DESKII (copy left) — the whole app grows out of the gem on arrival,
+          so this is a single-viewport section now (no pin / no dead scroll). */}
+      <section ref={reg(4)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`space-y-5 ${col(-1)}`}>
-            <div className="glass max-w-xl p-8 sm:p-10">
-              <p className="eyebrow !text-[#7fc8ad]">{OFFER.eyebrow}</p>
-              <h2 className="font-display h2 mt-4 text-white">{OFFER.h}</h2>
-              <p className="mt-6 leading-relaxed text-band-mut">{OFFER.body}</p>
-            </div>
-            <div className="glass max-w-xl p-7">
-              <p className="eyebrow !text-[#7fc8ad]">Selective, on purpose</p>
-              <p className="mt-3 text-[1rem] font-medium leading-relaxed text-band-ink">{OFFER.qualification}</p>
-              <Link href="/audit" className="btn btn-primary mt-6">
-                {OFFER.cta}
-                <ArrowRight size={15} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6 — OWNERSHIP (copy left) */}
-      <section ref={reg(6)} className="relative z-10 flex min-h-screen items-center">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className="space-y-4 lg:col-span-6">
-            <div className="glass p-6">
-              <p className="eyebrow !text-[#7fc8ad]">{OWNERSHIP.eyebrow}</p>
-              <h2 className="font-display h2 mt-3 text-white">{OWNERSHIP.h}</h2>
-              <p className="mt-3 text-[0.98rem] font-medium text-[#7fc8ad]">{OWNERSHIP.kicker}</p>
-            </div>
-            <div className="glass p-6">
-              <dl>
-                {OWNERSHIP.declarations.map((d) => (
-                  <div key={d.k} className="grid gap-1 border-t border-band-line py-2.5 first:border-t-0 sm:grid-cols-[150px_1fr] sm:gap-5">
-                    <dt className="text-[0.95rem] font-bold text-band-ink">{d.k}</dt>
-                    <dd className="text-[0.9rem] text-band-mut">{d.v}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-3 border-t border-band-line pt-3 text-[0.85rem] leading-relaxed text-band-mut">
-                {OWNERSHIP.terms}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7 — INDUSTRIES (copy right) */}
-      <section ref={reg(7)} className="relative z-10 flex min-h-screen items-center" id="industries">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`glass max-w-2xl p-6 sm:p-8 ${col(-1)}`}>
-            <p className="eyebrow !text-[#7fc8ad]">{INDUSTRIES.eyebrow}</p>
-            <h2 className="font-display h2 mt-3 text-white">{INDUSTRIES.h}</h2>
-            <p className="mt-4 text-[0.95rem] leading-relaxed text-band-mut">{INDUSTRIES.body}</p>
-            <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-              {INDUSTRIES.cards.map((c) => (
-                <li key={c.name} className="border-t border-band-line pt-2.5">
-                  <h3 className="font-display text-[1.05rem] text-white">{c.name}</h3>
-                  <p className="mt-0.5 text-[0.84rem] leading-snug text-band-mut">{c.copy}</p>
+          <div className="max-w-xl lg:col-span-6" data-reveal>
+            <p className="eyebrow !text-[#7fc8ad]">{DESKII.eyebrow}</p>
+            <h2 className="font-display h2 mt-5 text-white">{DESKII.h}</h2>
+            <p className="mt-6 max-w-lg leading-relaxed text-band-mut">{DESKII.body}</p>
+            <ul className="mt-8 space-y-0 text-[0.95rem] leading-snug">
+              {DESKII.features.map((f, i) => (
+                <li key={f.name} className="border-t border-band-line py-2.5 transition-colors duration-300">
+                  <span className={`font-bold ${deskMod === i ? "text-[#7fc8ad]" : "text-band-ink"}`}>{f.name}</span>
+                  <span className="text-band-mut"> — {f.copy}</span>
                 </li>
               ))}
-              <li className="border-t border-band-line pt-2.5">
-                <h3 className="font-display text-[1.05rem] text-white">Another service business?</h3>
-                <p className="mt-0.5 text-[0.84rem] leading-snug text-band-mut">
+            </ul>
+            <Link href="/deskii" className="link-arrow mt-6 !text-[#7fc8ad] text-[0.98rem]">
+              {DESKII.cta}
+              <ArrowRight size={15} />
+            </Link>
+            <p className="mono-num mt-5 text-[0.78rem] text-band-mut">
+              Deskii — the client command center every Gemfield engagement runs on
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5 — OFFER (copy right, open typography; the qualification card lives
+          with Plans now — same message, next to the prices it qualifies) */}
+      <section ref={reg(5)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
+        <div className="container-g grid gap-10 lg:grid-cols-12">
+          <div className={`max-w-2xl ${col(-1)}`} data-reveal>
+            <p className="eyebrow !text-[#7fc8ad]">{OFFER.eyebrow}</p>
+            <h2 className="font-display h2 mt-5 text-white">{OFFER.h}</h2>
+            <p className="mt-7 max-w-xl text-[1.05rem] leading-relaxed text-band-mut">{OFFER.body}</p>
+            <Link href="/audit" className="btn btn-primary mt-9 !px-6 !py-3.5">
+              {OFFER.cta}
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 6 — INDUSTRIES (copy left now — Ownership moved into the Trust chapter) */}
+      <section ref={reg(6)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]" id="industries">
+        <div className="container-g grid gap-10 lg:grid-cols-12">
+          <div className="max-w-2xl lg:col-span-6" data-reveal>
+            <p className="eyebrow !text-[#7fc8ad]">{INDUSTRIES.eyebrow}</p>
+            <h2 className="font-display h2 mt-5 text-white">{INDUSTRIES.h}</h2>
+            <p className="mt-6 max-w-xl leading-relaxed text-band-mut">{INDUSTRIES.body}</p>
+            <ul className="mt-9 grid gap-x-10 gap-y-4 sm:grid-cols-2">
+              {INDUSTRIES.cards.map((c) => (
+                <li key={c.name} className="border-t border-band-line pt-3">
+                  <h3 className="font-display text-[1.18rem] text-white">{c.name}</h3>
+                  <p className="mt-1 text-[0.88rem] leading-snug text-band-mut">{c.copy}</p>
+                </li>
+              ))}
+              <li className="border-t border-band-line pt-3">
+                <h3 className="font-display text-[1.18rem] text-white">Another service business?</h3>
+                <p className="mt-1 text-[0.88rem] leading-snug text-band-mut">
                   If your business grows when the phone rings, forms come in, and calendars fill up — the
                   system fits. Tell us what you do in the audit.
                 </p>
               </li>
             </ul>
-            <Link href="/audit" className="link-arrow mt-4 !text-[#7fc8ad] text-[0.95rem]">
+            <Link href="/audit" className="link-arrow mt-7 !text-[#7fc8ad] text-[0.95rem]">
               Get your audit
               <ArrowRight size={14} />
             </Link>
@@ -617,19 +629,19 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 8 — PROCESS (copy left) */}
-      <section ref={reg(8)} className="relative z-10 flex min-h-screen items-center">
+      {/* 7 — HOW IT WORKS (single-viewport Process; copy right) */}
+      <section ref={reg(7)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className="glass max-w-xl p-8 sm:p-10 lg:col-span-6">
+          <div className={`max-w-2xl ${col(-1)}`} data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{PROCESS.eyebrow}</p>
-            <h2 className="font-display h2 mt-4 text-white">{PROCESS.h}</h2>
-            <ol className="mt-7 space-y-5">
+            <h2 className="font-display h2 mt-5 text-white">{PROCESS.h}</h2>
+            <ol className="mt-8 space-y-4">
               {PROCESS.steps.map((s) => (
-                <li key={s.n} className="flex gap-4">
+                <li key={s.n} className="flex gap-5 border-t border-band-line pt-3.5">
                   <span className="mono-num shrink-0 text-[0.9rem] font-medium text-[#7fc8ad]">{s.n}/5</span>
                   <div>
-                    <h3 className="font-display text-[1.2rem] text-white">{s.name}</h3>
-                    <p className="mt-1 text-[0.92rem] leading-relaxed text-band-mut">{s.copy}</p>
+                    <h3 className="font-display text-[1.25rem] text-white">{s.name}</h3>
+                    <p className="mt-1 max-w-lg text-[0.92rem] leading-relaxed text-band-mut">{s.copy}</p>
                   </div>
                 </li>
               ))}
@@ -642,153 +654,157 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 9 — PROOF (copy right) */}
-      <section ref={reg(9)} className="relative z-10 flex min-h-screen items-center">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`glass max-w-2xl p-6 sm:p-8 ${col(-1)}`}>
-            <p className="eyebrow !text-[#7fc8ad]">{PROOF.eyebrow}</p>
-            <h2 className="font-display h2 mt-3 text-white">{PROOF.h}</h2>
-            <p className="mt-4 text-[0.95rem] leading-relaxed text-band-mut">{PROOF.body}</p>
-            <ul className="mt-4 grid gap-4 border-t border-band-line pt-4 sm:grid-cols-3">
-              {PROOF.artifacts.map((a) => (
-                <li key={a.name}>
-                  <h3 className="text-[0.92rem] font-bold text-band-ink">{a.name}</h3>
-                  <p className="mt-1 text-[0.8rem] leading-snug text-band-mut">{a.copy}</p>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 grid gap-5 border-t border-band-line pt-4 sm:grid-cols-2">
-              <div>
-                <p className="eyebrow !text-band-mut">{PROOF.beforeAfter.beforeLabel}</p>
-                <ul className="mt-2 space-y-1 text-[0.84rem] text-band-mut">
-                  {PROOF.beforeAfter.beforeItems.map((i) => (
-                    <li key={i} className="flex gap-2">
-                      <span aria-hidden="true">–</span>
-                      {i}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="eyebrow">{PROOF.beforeAfter.afterLabel}</p>
-                <ul className="mt-2 space-y-1 text-[0.84rem] font-medium text-band-ink">
-                  {PROOF.beforeAfter.afterItems.map((i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-[#7fc8ad]" aria-hidden="true">+</span>
-                      {i}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+      {/* 8 — PLANS (full-width structured pricing; the qualification from the
+          Offer chapter lives here, next to the prices it qualifies) */}
+      <section ref={reg(8)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
+        <div className="container-g w-full">
+          <div className="grid gap-8 lg:grid-cols-12" data-reveal>
+            <div className="lg:col-span-7">
+              <p className="eyebrow !text-[#7fc8ad]">{PLANS.eyebrow}</p>
+              <h2 className="font-display h2 mt-4 text-white">{PLANS.h}</h2>
+              <p className="mt-4 max-w-xl text-[0.98rem] leading-relaxed text-band-mut">{PLANS.body}</p>
             </div>
-            <p className="mono-num mt-3 text-[0.78rem] text-band-mut">{PROOF.beforeAfter.note}</p>
           </div>
-        </div>
-      </section>
-
-      {/* 10 — PLANS (copy left) */}
-      <section ref={reg(10)} className="relative z-10 flex min-h-screen items-center">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className="glass max-w-2xl p-6 sm:p-7 lg:col-span-6">
-            <p className="eyebrow !text-[#7fc8ad]">{PLANS.eyebrow}</p>
-            <h2 className="font-display h2 mt-3 text-white">{PLANS.h}</h2>
-            <p className="mt-2 text-[0.95rem] leading-snug text-band-mut">{PLANS.body}</p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {PLANS.tiers.map((t) => (
-                <div
-                  key={t.name}
-                  className={`rounded-xl border p-3 ${t.highlight ? "border-[#7fc8ad]/60 bg-[#7fc8ad]/5" : "border-band-line"}`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-display text-[1.02rem] text-white">{t.name}</h3>
-                    {t.highlight && (
-                      <span className="mono-num rounded-full border border-[#7fc8ad]/50 px-2 py-0.5 text-[0.66rem] uppercase tracking-[0.1em] text-[#7fc8ad]">
-                        Most chosen
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1">
-                    {t.price.startsWith("From ") ? (
-                      <>
-                        <span className="mr-1 text-[0.78rem] text-band-mut">From</span>
-                        <span className="mono-num text-[1.1rem] font-semibold text-band-ink">{t.price.slice(5)}</span>
-                      </>
-                    ) : (
-                      <span className="mono-num text-[1.1rem] font-semibold text-band-ink">{t.price}</span>
-                    )}
-                    <span className="text-[0.78rem] text-band-mut">{t.period}</span>
-                  </p>
-                  <p className="mt-0.5 text-[0.78rem] font-medium leading-snug text-band-mut">{t.bestFor}</p>
-                  <ul className="mt-1.5 space-y-0.5">
-                    {t.highlights.map((h) => (
-                      <li key={h} className="flex gap-2 text-[0.8rem] leading-snug text-band-ink">
-                        <Check size={12} className="mt-0.5 shrink-0 text-[#7fc8ad]" />
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2.5 rounded-xl border border-band-line px-4 py-2.5">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-[0.92rem] font-bold text-band-ink">{PLANS.websiteOnly.name}</h3>
-                <p className="mono-num text-[0.98rem] font-semibold text-band-ink">{PLANS.websiteOnly.price}</p>
-              </div>
-              <p className="mt-1 text-[0.8rem] leading-snug text-band-mut">{PLANS.websiteOnly.copy}</p>
-            </div>
-            <Link href="/pricing" className="link-arrow mt-3 !text-[#7fc8ad] text-[0.95rem]">
-              {PLANS.cta}
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 11 — WHY (copy right) */}
-      <section ref={reg(11)} className="relative z-10 flex min-h-screen items-center">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`glass max-w-xl p-8 sm:p-10 ${col(-1)}`}>
-            <p className="eyebrow !text-[#7fc8ad]">{WHY.eyebrow}</p>
-            <h2 className="font-display h2 mt-4 text-white">{WHY.h}</h2>
-            <p className="mt-5 leading-relaxed text-band-mut">{WHY.body}</p>
-            <ul className="mt-6 space-y-2.5">
-              {WHY.points.map((p) => (
-                <li key={p} className="flex gap-3 text-[0.95rem] font-medium text-band-ink">
-                  <Check size={16} className="mt-0.5 shrink-0 text-[#7fc8ad]" />
-                  {p}
-                </li>
-              ))}
-            </ul>
-            {/* Founder block — placeholder content (SITE-PLAN §11). */}
-            <div className="mt-7 flex items-center gap-4 border-t border-band-line pt-6">
-              <span
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#7fc8ad]/10 font-display text-[1.3rem] text-[#7fc8ad]"
-                aria-hidden="true"
+          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
+            {PLANS.tiers.map((t) => (
+              <div
+                key={t.name}
+                className={`glass p-5 ${t.highlight ? "!border-[#7fc8ad]/50" : ""}`}
               >
-                G
-              </span>
-              <div>
-                <p className="font-display text-[1.05rem] text-white">{WHY.founder.name}</p>
-                <p className="mt-0.5 text-[0.88rem] leading-relaxed text-band-mut">&ldquo;{WHY.founder.line}&rdquo;</p>
-                <p className="eyebrow mt-2 !text-band-mut">{WHY.founder.location}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-display text-[1.15rem] text-white">{t.name}</h3>
+                  {t.highlight && (
+                    <span className="mono-num rounded-full border border-[#7fc8ad]/50 px-2 py-0.5 text-[0.64rem] uppercase tracking-[0.1em] text-[#7fc8ad]">
+                      Most chosen
+                    </span>
+                  )}
+                </div>
+                <p className="mt-3">
+                  {t.price.startsWith("From ") ? (
+                    <>
+                      <span className="mr-1.5 text-[0.82rem] text-band-mut">From</span>
+                      <span className="mono-num text-[1.45rem] font-semibold text-band-ink">{t.price.slice(5)}</span>
+                    </>
+                  ) : (
+                    <span className="mono-num text-[1.45rem] font-semibold text-band-ink">{t.price}</span>
+                  )}
+                  <span className="text-[0.82rem] text-band-mut">{t.period}</span>
+                </p>
+                <p className="mt-2 min-h-[3.4em] text-[0.84rem] font-medium leading-snug text-band-mut">{t.bestFor}</p>
+                <ul className="mt-3 space-y-1.5 border-t border-band-line pt-3">
+                  {t.highlights.map((h) => (
+                    <li key={h} className="flex gap-2 text-[0.86rem] leading-snug text-band-ink">
+                      <Check size={13} className="mt-0.5 shrink-0 text-[#7fc8ad]" />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
               </div>
+            ))}
+          </div>
+          <div className="mt-6 grid gap-x-10 gap-y-4 border-t border-band-line pt-5 lg:grid-cols-12" data-reveal>
+            <div className="lg:col-span-5">
+              <div className="flex flex-wrap items-baseline gap-x-4">
+                <h3 className="text-[0.95rem] font-bold text-band-ink">{PLANS.websiteOnly.name}</h3>
+                <p className="mono-num text-[1rem] font-semibold text-band-ink">{PLANS.websiteOnly.price}</p>
+              </div>
+              <p className="mt-1.5 text-[0.84rem] leading-snug text-band-mut">{PLANS.websiteOnly.copy}</p>
+              <Link href="/pricing" className="link-arrow mt-3 !text-[#7fc8ad] text-[0.95rem]">
+                {PLANS.cta}
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div className="lg:col-span-6 lg:col-start-7">
+              <p className="eyebrow !text-[#7fc8ad]">Selective, on purpose</p>
+              <p className="mt-1.5 max-w-xl text-[0.92rem] font-medium leading-relaxed text-band-ink">
+                {OFFER.qualification}
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 12 — FINAL CTA (copy left) */}
-      <section ref={reg(12)} className="relative z-10 flex min-h-screen items-center">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-6">
-            <div className="glass p-6 sm:p-8">
-              <h2 className="font-display h2 text-white">{FINAL_CTA.h}</h2>
-              <p className="mt-3 text-[0.98rem] leading-relaxed text-band-mut">{FINAL_CTA.body}</p>
-              <p className="mono-num mt-2 text-[0.82rem] text-band-mut">{FINAL_CTA.micro}</p>
-              <div className="mt-4">
-                <AuditForm id="audit-form" />
+      {/* 9 — TRUST (pinned, 2 beats: ownership → why; copy right) */}
+      <div ref={reg(9)} className="relative h-[200vh]">
+        {[0, 1].map((i) => (
+          <div key={i} className="snap-beat" style={{ top: `${((i + 0.5) / 2) * 100}vh` }} aria-hidden />
+        ))}
+        <section className="sticky top-0 z-10 flex h-screen items-center pt-16 max-lg:items-start max-lg:pt-[20vh]">
+          <div className="container-g grid gap-10 lg:grid-cols-12">
+            {/* both beats share one grid cell (see How-it-works note) */}
+            <div className={`grid max-w-2xl ${col(-1)}`}>
+              {/* beat 0 — the ownership pledge */}
+              <div
+                className="col-start-1 row-start-1 self-center transition-all duration-500"
+                style={beatStyle(trustBeat === 0)}
+                inert={trustBeat !== 0}
+              >
+                <p className="eyebrow !text-[#7fc8ad]">{OWNERSHIP.eyebrow}</p>
+                <h2 className="font-display h2 mt-5 text-white">{OWNERSHIP.h}</h2>
+                <p className="mt-4 text-[0.98rem] font-medium text-[#7fc8ad]">{OWNERSHIP.kicker}</p>
+                <dl className="mt-7">
+                  {OWNERSHIP.declarations.map((d) => (
+                    <div key={d.k} className="grid gap-1 border-t border-band-line py-3 sm:grid-cols-[160px_1fr] sm:gap-6">
+                      <dt className="text-[0.95rem] font-bold text-band-ink">{d.k}</dt>
+                      <dd className="text-[0.92rem] text-band-mut">{d.v}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-4 max-w-xl border-t border-band-line pt-4 text-[0.88rem] leading-relaxed text-band-mut">
+                  {OWNERSHIP.terms}
+                </p>
               </div>
+              {/* beat 1 — why Gemfield + founder */}
+              <div
+                className="col-start-1 row-start-1 self-center transition-all duration-500"
+                style={beatStyle(trustBeat === 1)}
+                inert={trustBeat !== 1}
+              >
+                <p className="eyebrow !text-[#7fc8ad]">{WHY.eyebrow}</p>
+                <h2 className="font-display h2 mt-5 text-white">{WHY.h}</h2>
+                <p className="mt-5 max-w-xl leading-relaxed text-band-mut">{WHY.body}</p>
+                <ul className="mt-7 space-y-2.5">
+                  {WHY.points.map((p) => (
+                    <li key={p} className="flex gap-3 text-[0.95rem] font-medium text-band-ink">
+                      <Check size={16} className="mt-0.5 shrink-0 text-[#7fc8ad]" />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+                {/* Founder block — placeholder content (SITE-PLAN §11). */}
+                <div className="mt-8 flex items-center gap-4 border-t border-band-line pt-6">
+                  <span
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#7fc8ad]/10 font-display text-[1.3rem] text-[#7fc8ad]"
+                    aria-hidden="true"
+                  >
+                    G
+                  </span>
+                  <div>
+                    <p className="font-display text-[1.05rem] text-white">{WHY.founder.name}</p>
+                    <p className="mt-0.5 text-[0.88rem] leading-relaxed text-band-mut">&ldquo;{WHY.founder.line}&rdquo;</p>
+                    <p className="eyebrow mt-2 !text-band-mut">{WHY.founder.location}</p>
+                  </div>
+                </div>
+              </div>
+              {/* no-JS / crawler fallback for the hidden beat */}
+              <div className="sr-only">
+                {WHY.eyebrow}: {WHY.h}. {WHY.body} {WHY.points.join(" ")} {WHY.founder.name} —{" "}
+                {WHY.founder.line} {WHY.founder.location}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* 10 — FINAL CTA (copy left) */}
+      <section ref={reg(10)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[38vh]">
+        <div className="container-g grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-6" data-reveal>
+            <h2 className="font-display h2 text-white">{FINAL_CTA.h}</h2>
+            <p className="mt-4 max-w-xl text-[1rem] leading-relaxed text-band-mut">{FINAL_CTA.body}</p>
+            <p className="mono-num mt-2 text-[0.82rem] text-band-mut">{FINAL_CTA.micro}</p>
+            <div className="glass mt-5 p-5">
+              <AuditForm id="audit-form" />
             </div>
           </div>
         </div>

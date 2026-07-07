@@ -7,7 +7,9 @@
  * no React renders on scroll.
  */
 
-/** Section order — must match the DOM sections on the immersive page. */
+/** Section order — must match the DOM sections on the immersive page.
+ * Redesign merge: "process" is a 2-beat pinned chapter (process → proof),
+ * "trust" is a 2-beat pinned chapter (ownership → why). */
 export const SECTION_IDS = [
   "hero",
   "problem",
@@ -15,12 +17,10 @@ export const SECTION_IDS = [
   "fuel",
   "deskii",
   "offer",
-  "ownership",
   "industries",
   "process",
-  "proof",
   "plans",
-  "why",
+  "trust",
   "cta",
 ] as const;
 
@@ -37,12 +37,10 @@ export const COPY_SIDE: Record<SectionId, 1 | -1> = {
   fuel: -1,
   deskii: 1,
   offer: -1,
-  ownership: 1,
-  industries: -1,
-  process: 1,
-  proof: -1,
+  industries: 1,
+  process: -1,
   plans: 1,
-  why: -1,
+  trust: -1,
   cta: 1,
 };
 
@@ -57,12 +55,14 @@ type Journey = {
   sys: number;
   /** 0..1 through the pinned Deskii showcase (6 module beats) */
   desk: number;
+  /** 0..1 through the pinned Trust chapter (ownership → why beats) */
+  trust: number;
   /** -1..1 normalized pointer for parallax */
   mx: number;
   my: number;
 };
 
-const fresh = (): Journey => ({ p: 0, sec: 0, t: 0, sys: 0, desk: 0, mx: 0, my: 0 });
+const fresh = (): Journey => ({ p: 0, sec: 0, t: 0, sys: 0, desk: 0, trust: 0, mx: 0, my: 0 });
 
 /**
  * The scroll store MUST be a true singleton, but this module gets duplicated
