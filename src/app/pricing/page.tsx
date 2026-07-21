@@ -127,6 +127,12 @@ export default function PricingPage() {
                         Prefer a call first? Start with a free audit
                         <ArrowRight size={13} />
                       </Link>
+                      <Link
+                        href={`/intake?plan=${t.name.toLowerCase()}`}
+                        className="mt-2 block text-center text-[0.82rem] text-ink2 underline-offset-2 hover:underline"
+                      >
+                        Already subscribed? Complete your 2-minute intake
+                      </Link>
                     </div>
                   ) : (
                     <Link

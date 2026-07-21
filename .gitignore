@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Local scratch backups (not product)
 /.backups/
+
+# Intake submissions + outbox (client data — never committed)
+/data/

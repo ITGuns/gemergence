@@ -25,6 +25,9 @@ export const SITE = {
 // While a value is null, that tier keeps the audit/quote flow — no broken link
 // ever goes live. Only fixed-price recurring tiers belong here; the custom
 // "From $…" tiers stay quote-only.
+// When creating each link, set its Square confirmation/redirect URL to
+// `${SITE.url}/intake?plan=<slug>` (e.g. /intake?plan=growth) so buyers land
+// in the 2-minute intake with their tier attached (see src/lib/intake/).
 export const CHECKOUT: Record<string, string | null> = {
   Foundation: null,
   Growth: null,

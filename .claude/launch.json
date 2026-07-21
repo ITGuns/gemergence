@@ -5,7 +5,7 @@
       "name": "gemfield-site",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "autoPort": true
     }
   ]
 }

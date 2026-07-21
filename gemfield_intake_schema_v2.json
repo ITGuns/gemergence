@@ -1,0 +1,806 @@
+{
+ "version": "2.0",
+ "timeBudget": {
+  "coreSeconds": 90,
+  "nicheSeconds": 30,
+  "maxTapFields": 99,
+  "notes": "Interaction budget enforced in CI — see integration guide"
+ },
+ "submissionMeta": [
+  "submission_id",
+  "tier (locked, from purchase/sales panel)",
+  "contact_name",
+  "contact_email",
+  "contact_phone",
+  "source: self_signup|sales_panel",
+  "sales_rep_id?"
+ ],
+ "nicheSelector": {
+  "id": "N-001",
+  "label": "What kind of business is this?",
+  "type": "choice",
+  "options": [
+   "HVAC",
+   "Personal Injury Law",
+   "Home Services",
+   "Other / General"
+  ],
+  "homeServicesSelector": {
+   "id": "N-002",
+   "label": "Which trade?",
+   "type": "choice",
+   "options": [
+    "Septic Services",
+    "Roofing",
+    "Window Cleaning",
+    "Pest Control",
+    "Plumbing",
+    "Electrical",
+    "Landscaping / Lawn",
+    "House Cleaning",
+    "Garage Door",
+    "Pressure Washing",
+    "Gutters",
+    "Painting",
+    "Other Home Service"
+   ]
+  }
+ },
+ "core": [
+  {
+   "id": "D-101",
+   "label": "Business name",
+   "hint": "",
+   "type": "text",
+   "prefill": "business_name",
+   "required": true
+  },
+  {
+   "id": "D-201",
+   "label": "What do you do, in one line",
+   "hint": "E.g., \"Residential AC repair and installation\"",
+   "type": "text",
+   "required": true
+  },
+  {
+   "id": "D-205",
+   "label": "Where do you serve?",
+   "hint": "Cities or area — e.g., \"Iloilo City + 30km\"",
+   "type": "text",
+   "required": true
+  },
+  {
+   "id": "D-501",
+   "label": "When someone lands on your site, the #1 thing they should do:",
+   "options": [
+    "Call me",
+    "Book an appointment",
+    "Request a quote",
+    "Message me (WhatsApp/text)",
+    "Visit my location"
+   ],
+   "hint": "",
+   "type": "choice",
+   "required": true
+  },
+  {
+   "id": "D-801",
+   "label": "Send new leads to:",
+   "hint": "The email (or phone for texts) that gets notified",
+   "type": "text",
+   "required": true
+  },
+  {
+   "id": "D-703",
+   "label": "Your brand in up to 3 words:",
+   "options": [
+    "Trustworthy",
+    "Modern",
+    "Friendly",
+    "Premium",
+    "Bold",
+    "Local",
+    "Expert",
+    "No-nonsense"
+   ],
+   "hint": "",
+   "type": "multichoice",
+   "max": 3,
+   "required": true
+  },
+  {
+   "id": "D-720",
+   "label": "Pick the style closest to your taste:",
+   "options": [
+    "Clean & modern",
+    "Warm & friendly",
+    "Bold & confident",
+    "Premium & elegant"
+   ],
+   "hint": "We design from this — you'll refine on the preview",
+   "type": "choice",
+   "required": true,
+   "derives": [
+    "D-705",
+    "D-706",
+    "D-708"
+   ]
+  },
+  {
+   "id": "D-721",
+   "label": "Colors:",
+   "options": [
+    "Use my logo's colors",
+    "I'll name them below",
+    "You choose for me"
+   ],
+   "hint": "",
+   "type": "choice",
+   "required": true
+  },
+  {
+   "id": "D-704",
+   "label": "If naming colors: which?",
+   "hint": "E.g., \"navy and orange\" — skip if not applicable",
+   "type": "text",
+   "optional": true
+  },
+  {
+   "id": "D-722",
+   "label": "What do you have ready?",
+   "options": [
+    "Logo + photos of our work",
+    "Logo only",
+    "Photos only",
+    "Neither yet"
+   ],
+   "hint": "We'll send an upload link after — nothing needed now",
+   "type": "choice",
+   "required": true,
+   "derives": [
+    "D-710",
+    "D-707"
+   ]
+  },
+  {
+   "id": "D-723",
+   "label": "A website you like (optional)",
+   "hint": "Any industry — paste a link",
+   "type": "text",
+   "optional": true
+  },
+  {
+   "id": "D-906",
+   "label": "Anything we must know? (optional)",
+   "hint": "",
+   "type": "text",
+   "optional": true
+  }
+ ],
+ "niche": {
+  "hvac": {
+   "label": "HVAC",
+   "group": null,
+   "fields": [
+    {
+     "id": "H-101",
+     "label": "Services you offer:",
+     "options": [
+      "AC repair",
+      "AC install",
+      "Heating",
+      "Maintenance plans",
+      "Ductwork",
+      "Air quality"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "H-201",
+     "label": "Emergency service:",
+     "options": [
+      "24/7",
+      "After-hours (fee)",
+      "Business hours only"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "H-203",
+     "label": "Do you sell a maintenance plan/membership?",
+     "options": [
+      "Yes",
+      "No",
+      "Want to start one"
+     ],
+     "hint": "",
+     "type": "choice"
+    },
+    {
+     "id": "H-204",
+     "label": "Financing offered?",
+     "options": [
+      "Yes",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    },
+    {
+     "id": "H-301",
+     "label": "State license #",
+     "hint": "Shown on your site — required in most states",
+     "type": "text",
+     "required": true
+    }
+   ]
+  },
+  "personal_injury": {
+   "label": "Personal Injury Law",
+   "group": null,
+   "fields": [
+    {
+     "id": "P-101",
+     "label": "Case types:",
+     "options": [
+      "Car accidents",
+      "Truck",
+      "Motorcycle",
+      "Slip & fall",
+      "Medical malpractice",
+      "Workers' comp",
+      "Wrongful death",
+      "Dog bites"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "P-301",
+     "label": "Consultations:",
+     "options": [
+      "Free, 24/7 phones",
+      "Free, business hours",
+      "Paid consult"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "P-302",
+     "label": "Intake languages:",
+     "options": [
+      "English",
+      "Spanish",
+      "Other"
+     ],
+     "hint": "",
+     "type": "multichoice"
+    },
+    {
+     "id": "P-201",
+     "label": "Fee line for the site:",
+     "options": [
+      "\"No fee unless we win\" (standard)",
+      "We'll provide custom wording"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "P-401",
+     "label": "15-min compliance call with the responsible attorney before launch?",
+     "options": [
+      "Yes — required for us",
+      "Yes"
+     ],
+     "hint": "Bar advertising rules vary by state; we verify everything publishable on this call",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  },
+  "septic": {
+   "label": "Septic Services",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-211",
+     "label": "Services:",
+     "options": [
+      "Pumping/cleaning",
+      "Inspections",
+      "Repairs",
+      "Installs",
+      "Drain field",
+      "Grease traps"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-213",
+     "label": "Emergency backups?",
+     "options": [
+      "24/7",
+      "Same-day usually",
+      "Scheduled only"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "S-214",
+     "label": "Do you handle county permits?",
+     "options": [
+      "Yes",
+      "No",
+      "Sometimes"
+     ],
+     "hint": "",
+     "type": "choice"
+    }
+   ]
+  },
+  "roofing": {
+   "label": "Roofing",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-221",
+     "label": "Work you do:",
+     "options": [
+      "Repairs",
+      "Full replacement",
+      "Storm/insurance claims",
+      "Inspections",
+      "Metal",
+      "Flat/commercial"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-223",
+     "label": "Help with insurance claims?",
+     "options": [
+      "Yes — we guide the process",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "S-224",
+     "label": "Free inspections?",
+     "options": [
+      "Yes",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    },
+    {
+     "id": "S-222",
+     "label": "Manufacturer certifications (optional)",
+     "hint": "GAF, Owens Corning tier, etc.",
+     "type": "text",
+     "optional": true
+    }
+   ]
+  },
+  "window_cleaning": {
+   "label": "Window Cleaning",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-231",
+     "label": "Scope:",
+     "options": [
+      "Homes",
+      "Storefronts",
+      "High-rise",
+      "Screens & tracks",
+      "Gutter add-on",
+      "Pressure washing add-on"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-233",
+     "label": "Recurring plans?",
+     "options": [
+      "Yes — most clients recur",
+      "Some",
+      "One-time mostly"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  },
+  "pest_control": {
+   "label": "Pest Control",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-241",
+     "label": "Pests treated:",
+     "options": [
+      "General (ants/roaches)",
+      "Rodents",
+      "Termites",
+      "Bed bugs",
+      "Mosquitoes",
+      "Wildlife"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-243",
+     "label": "Service model:",
+     "options": [
+      "Quarterly plans",
+      "One-time",
+      "Both"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "S-244",
+     "label": "Pet/child-safe options?",
+     "options": [
+      "Yes",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    }
+   ]
+  },
+  "plumbing": {
+   "label": "Plumbing",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-251",
+     "label": "Signature services:",
+     "options": [
+      "Emergency/burst",
+      "Drains & sewer",
+      "Water heaters",
+      "Repipes",
+      "Leak detection",
+      "Remodels"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-253",
+     "label": "Emergency availability:",
+     "options": [
+      "24/7",
+      "After-hours (fee)",
+      "Business hours"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  },
+  "electrical": {
+   "label": "Electrical",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-261",
+     "label": "Signature services:",
+     "options": [
+      "Panel upgrades",
+      "EV chargers",
+      "Generators",
+      "Lighting",
+      "Rewires",
+      "Inspections"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-263",
+     "label": "Emergency availability:",
+     "options": [
+      "24/7",
+      "After-hours (fee)",
+      "Business hours"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  },
+  "landscaping": {
+   "label": "Landscaping / Lawn",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-271",
+     "label": "Work mix:",
+     "options": [
+      "Recurring maintenance",
+      "Design & build",
+      "Hardscape",
+      "Irrigation",
+      "Cleanups"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-273",
+     "label": "Maintenance plans?",
+     "options": [
+      "Weekly/bi-weekly plans",
+      "Mostly one-time projects",
+      "Both"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  },
+  "house_cleaning": {
+   "label": "House Cleaning",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-281",
+     "label": "Service types:",
+     "options": [
+      "Recurring",
+      "One-time/deep",
+      "Move in/out",
+      "Offices"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-283",
+     "label": "Online booking with instant prices?",
+     "options": [
+      "Yes — want that",
+      "Prefer quote first"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  },
+  "garage_door": {
+   "label": "Garage Door",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-291",
+     "label": "Work:",
+     "options": [
+      "Spring/cable repair",
+      "Openers",
+      "New doors",
+      "Commercial"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-293",
+     "label": "Same-day spring repair?",
+     "options": [
+      "Yes",
+      "Usually",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    }
+   ]
+  },
+  "pressure_washing": {
+   "label": "Pressure Washing",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-292",
+     "label": "Surfaces:",
+     "options": [
+      "House/soft wash",
+      "Roofs",
+      "Driveways",
+      "Decks",
+      "Commercial/fleets"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-294",
+     "label": "Bundle with windows/gutters?",
+     "options": [
+      "Yes",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    }
+   ]
+  },
+  "gutters": {
+   "label": "Gutters",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-311",
+     "label": "Services:",
+     "options": [
+      "Cleaning",
+      "Repair",
+      "New installs",
+      "Guards"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-313",
+     "label": "Recurring cleaning plans?",
+     "options": [
+      "Yes",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    }
+   ]
+  },
+  "painting": {
+   "label": "Painting",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-321",
+     "label": "Work:",
+     "options": [
+      "Interior",
+      "Exterior",
+      "Cabinets",
+      "Commercial"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "S-323",
+     "label": "Free color consultation?",
+     "options": [
+      "Yes",
+      "No"
+     ],
+     "hint": "",
+     "type": "choice"
+    }
+   ]
+  },
+  "other_home_service": {
+   "label": "Other Home Service",
+   "group": "home_services",
+   "fields": [
+    {
+     "id": "S-901",
+     "label": "Your trade + the 2–3 services to lead with",
+     "hint": "One line is enough",
+     "type": "text",
+     "required": true
+    },
+    {
+     "id": "S-902",
+     "label": "Urgency model:",
+     "options": [
+      "24/7 emergency",
+      "Same-day usually",
+      "Scheduled only"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    }
+   ]
+  }
+ },
+ "derivations": {
+  "D-720": {
+   "Clean & modern": {
+    "D-705": "Light & airy",
+    "D-706": "Clean & modern",
+    "D-708": "Balanced"
+   },
+   "Warm & friendly": {
+    "D-705": "Light & airy",
+    "D-706": "Soft & friendly",
+    "D-708": "Balanced"
+   },
+   "Bold & confident": {
+    "D-705": "Dark & dramatic",
+    "D-706": "Bold & loud",
+    "D-708": "Info-packed & practical"
+   },
+   "Premium & elegant": {
+    "D-705": "No preference",
+    "D-706": "Classic & established",
+    "D-708": "Spacious & premium"
+   }
+  },
+  "D-722": {
+   "Logo + photos of our work": {
+    "D-710": "Logo available",
+    "D-707": "Real photos of our work/team"
+   },
+   "Logo only": {
+    "D-710": "Logo available",
+    "D-707": "Premium stock photography"
+   },
+   "Photos only": {
+    "D-710": "Text-logo treatment needed",
+    "D-707": "Real photos of our work/team"
+   },
+   "Neither yet": {
+    "D-710": "Text-logo treatment needed",
+    "D-707": "Premium stock photography"
+   }
+  }
+ },
+ "followUpPool": [
+  "D-303 promo/offer",
+  "D-403 FAQ questions",
+  "D-602 testimonials with permission",
+  "D-802 lead-form fields",
+  "D-803/D-804 booking details (Tier 2+)",
+  "D-805 CRM routing (Tier 3+)",
+  "D-806 review timing (Tier 3+)",
+  "D-807 KPIs (Tier 3+)",
+  "P-102 attorney credentials",
+  "P-202/P-203 publishable results + bar requirements",
+  "H-203 plan name/price when H-203=Yes"
+ ]
+}
