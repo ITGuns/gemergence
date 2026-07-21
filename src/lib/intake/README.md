@@ -21,12 +21,10 @@ returns; no question text exists in component code.
 |---|---|---|
 | `INTAKE_PANEL_KEY` | Staff key for `/panel` + list/create APIs | dev: `dev-panel` fallback · prod: panel disabled |
 | `INTAKE_SERVICE_TOKEN` | Automation token for the export API | export accepts panel key only |
-| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | **Primary** email sender (Gmail SMTP via app password — no domain verification, delivers to any address, ~500/day) | falls through to Resend |
-| `RESEND_API_KEY` | Secondary sender (client confirmations + panel "Email link") | composed emails written to `data/intake/outbox/` instead |
-| `INTAKE_FROM_EMAIL` | Resend sender identity, e.g. `Gemfield Consulting <hello@gemfieldconsulting.com>` (domain must be verified in Resend) | falls back to the `onboarding@resend.dev` test sender — Resend test mode delivers only to the account owner's address |
+| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | Email sender (Gmail SMTP via app password — no domain verification, delivers to any address, ~500/day) | composed emails written to `data/intake/outbox/` instead |
 
-Provider chain per send: **Gmail SMTP → Resend → outbox**, with the outcome
-(and any provider error) written to the submission's event log.
+Every send's outcome (including any provider error) is written to the
+submission's event log.
 
 ## Adding or editing a niche — schema only, no code
 

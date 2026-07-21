@@ -1,8 +1,8 @@
 // Gemfield Web Intake v2 — notifications.
-// Client-facing email prefers Gmail SMTP (GMAIL_USER + GMAIL_APP_PASSWORD —
-// no domain verification needed, delivers to any address), then falls back to
-// Resend (RESEND_API_KEY), then to data/intake/outbox/ so the composed
-// message is inspectable and nothing is ever lost.
+// Client-facing email goes out via Gmail SMTP (GMAIL_USER + GMAIL_APP_PASSWORD
+// — no domain verification needed, delivers to any address, ~500/day). On any
+// failure the composed message lands in data/intake/outbox/ so content is
+// inspectable and nothing is ever lost.
 // Ops notification rides the existing FormSubmit endpoint (same plumbing as
 // the audit form) so the team inbox needs zero new accounts.
 
@@ -60,41 +60,9 @@ async function sendViaGmail(msg: Mail): Promise<{ ok: boolean; detail: string }>
   }
 }
 
-/** Resend HTTP API — secondary path, useful once the domain is verified. */
-async function sendViaResend(msg: Mail): Promise<{ ok: boolean; detail: string }> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return { ok: false, detail: "RESEND_API_KEY not set" };
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.INTAKE_FROM_EMAIL ?? `${SITE.name} <onboarding@resend.dev>`,
-        to: [msg.to],
-        subject: msg.subject,
-        html: msg.html,
-        text: msg.text,
-        reply_to: msg.replyTo ?? SITE.email,
-      }),
-    });
-    if (res.ok) return { ok: true, detail: "accepted (resend)" };
-    const errBody = await res.text().catch(() => "");
-    return { ok: false, detail: `Resend ${res.status}: ${errBody.slice(0, 300)}` };
-  } catch (e) {
-    return { ok: false, detail: `network: ${e instanceof Error ? e.message : "unknown"}` };
-  }
-}
-
-/** Provider chain: Gmail SMTP → Resend. Callers outbox on total failure. */
+/** Single provider: Gmail SMTP. Callers fall back to the outbox on failure. */
 async function sendEmail(msg: Mail): Promise<{ ok: boolean; detail: string }> {
-  const gmail = await sendViaGmail(msg);
-  if (gmail.ok) return gmail;
-  const resend = await sendViaResend(msg);
-  if (resend.ok) return resend;
-  return { ok: false, detail: `${gmail.detail} · ${resend.detail}` };
+  return sendViaGmail(msg);
 }
 
 /** Notify the internal team a submission landed. Never throws. */
