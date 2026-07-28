@@ -1,12 +1,12 @@
-// Gemfield Web Intake v2 — persistence.
-// File-based store under data/intake/ so the whole system runs with zero
-// external services in dev. The exported functions are the storage contract:
-// swapping to Postgres (the production target in the integration spec) means
-// reimplementing this module only — routes and UI never touch the filesystem.
+// Gemfield Web Intake v2 — persistence (Postgres).
+// Production storage: one row per submission in "IntakeSubmission" (the full
+// object lives in a jsonb column), with an atomic, yearly GF-ID counter in
+// "IntakeCounter". This module IS the storage contract — routes and UI never
+// touch it directly, so swapping stores (this file was previously file-based)
+// means reimplementing only this module; the exported functions are unchanged.
 
-import { promises as fs } from "fs";
-import path from "path";
 import crypto from "crypto";
+import { Pool, type PoolClient } from "pg";
 import type {
   Answers,
   ClientSubmissionView,
@@ -17,40 +17,57 @@ import type {
 import { tierLabelFor } from "./types";
 import { SCHEMA_VERSION } from "./schema";
 
-const DATA_DIR = path.join(process.cwd(), "data", "intake");
-const SUBMISSIONS_DIR = path.join(DATA_DIR, "submissions");
-const COUNTER_FILE = path.join(DATA_DIR, "gf-counter.json");
+// One Pool per process, reused across warm serverless invocations. Keep the
+// per-instance pool small: on serverless many instances connect at once, so we
+// lean on Supabase's transaction pooler (port 6543) to multiplex.
+const globalForPg = globalThis as unknown as { __intakePool?: Pool };
 
-async function ensureDirs() {
-  await fs.mkdir(SUBMISSIONS_DIR, { recursive: true });
-}
-
-async function writeJsonAtomic(file: string, value: unknown) {
-  const tmp = `${file}.${crypto.randomBytes(6).toString("hex")}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(value, null, 2), "utf8");
-  await fs.rename(tmp, file);
-}
-
-/** GF-{YYYY}-{seq}, sequence resets yearly. Counter file is the authority. */
-async function nextGfId(): Promise<string> {
-  await ensureDirs();
-  const year = new Date().getFullYear();
-  let counter = { year, seq: 0 };
-  try {
-    const raw = JSON.parse(await fs.readFile(COUNTER_FILE, "utf8"));
-    if (raw.year === year) counter = raw;
-  } catch {
-    /* first submission of the install or the year */
+function getPool(): Pool {
+  if (!globalForPg.__intakePool) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error(
+        "DATABASE_URL is not set — the intake store needs a Postgres connection string.",
+      );
+    }
+    globalForPg.__intakePool = new Pool({
+      connectionString,
+      max: Number(process.env.PG_POOL_MAX ?? 3),
+    });
   }
-  counter.seq += 1;
-  await writeJsonAtomic(COUNTER_FILE, counter);
-  return `GF-${year}-${String(counter.seq).padStart(4, "0")}`;
+  return globalForPg.__intakePool;
 }
 
-function submissionFile(id: string) {
-  // IDs are UUIDs we generate; the check keeps path traversal impossible anyway.
-  if (!/^[a-zA-Z0-9-]+$/.test(id)) throw new Error("Invalid submission id");
-  return path.join(SUBMISSIONS_DIR, `${id}.json`);
+// Lazy, idempotent schema bootstrap (mirrors the old ensureDirs()). Memoized so
+// it runs once per warm instance; resets on failure so a transient error retries.
+let schemaReady: Promise<void> | null = null;
+
+function ensureSchema(): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = (async () => {
+      const pool = getPool();
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS "IntakeSubmission" (
+          id         text PRIMARY KEY,
+          gf_id      text UNIQUE NOT NULL,
+          status     text NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          updated_at timestamptz NOT NULL DEFAULT now(),
+          data       jsonb NOT NULL
+        );
+      `);
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS "IntakeCounter" (
+          year int PRIMARY KEY,
+          seq  int NOT NULL DEFAULT 0
+        );
+      `);
+    })().catch((e) => {
+      schemaReady = null;
+      throw e;
+    });
+  }
+  return schemaReady;
 }
 
 export type CreateInput = {
@@ -65,8 +82,23 @@ export type CreateInput = {
   nichePreselect?: { niche: string; trade?: string };
 };
 
+/** GF-{YYYY}-{seq}, sequence resets yearly. The counter row is the authority;
+ *  the upsert increments and returns atomically, so concurrent creates can't
+ *  collide on a sequence number. */
+async function nextGfId(): Promise<string> {
+  await ensureSchema();
+  const year = new Date().getFullYear();
+  const { rows } = await getPool().query<{ seq: number }>(
+    `INSERT INTO "IntakeCounter" (year, seq) VALUES ($1, 1)
+     ON CONFLICT (year) DO UPDATE SET seq = "IntakeCounter".seq + 1
+     RETURNING seq`,
+    [year],
+  );
+  return `GF-${year}-${String(rows[0].seq).padStart(4, "0")}`;
+}
+
 export async function createSubmission(input: CreateInput): Promise<Submission> {
-  await ensureDirs();
+  await ensureSchema();
   const now = new Date().toISOString();
   const sub: Submission = {
     id: crypto.randomUUID(),
@@ -97,36 +129,38 @@ export async function createSubmission(input: CreateInput): Promise<Submission> 
     createdAt: now,
     submittedAt: null,
   };
-  await writeJsonAtomic(submissionFile(sub.id), sub);
+  await getPool().query(
+    `INSERT INTO "IntakeSubmission" (id, gf_id, status, created_at, updated_at, data)
+     VALUES ($1, $2, $3, $4, now(), $5::jsonb)`,
+    [sub.id, sub.gfId, sub.status, sub.createdAt, JSON.stringify(sub)],
+  );
   return sub;
 }
 
 export async function getSubmission(id: string): Promise<Submission | null> {
-  try {
-    return JSON.parse(await fs.readFile(submissionFile(id), "utf8")) as Submission;
-  } catch {
-    return null;
-  }
+  await ensureSchema();
+  const { rows } = await getPool().query<{ data: Submission }>(
+    `SELECT data FROM "IntakeSubmission" WHERE id = $1`,
+    [id],
+  );
+  return rows[0]?.data ?? null;
 }
 
 export async function getByGfId(gfId: string): Promise<Submission | null> {
-  const all = await listSubmissions();
-  return all.find((s) => s.gfId === gfId) ?? null;
+  await ensureSchema();
+  const { rows } = await getPool().query<{ data: Submission }>(
+    `SELECT data FROM "IntakeSubmission" WHERE gf_id = $1`,
+    [gfId],
+  );
+  return rows[0]?.data ?? null;
 }
 
 export async function listSubmissions(): Promise<Submission[]> {
-  await ensureDirs();
-  const files = await fs.readdir(SUBMISSIONS_DIR);
-  const subs: Submission[] = [];
-  for (const f of files) {
-    if (!f.endsWith(".json")) continue;
-    try {
-      subs.push(JSON.parse(await fs.readFile(path.join(SUBMISSIONS_DIR, f), "utf8")));
-    } catch {
-      /* skip unreadable record */
-    }
-  }
-  return subs.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  await ensureSchema();
+  const { rows } = await getPool().query<{ data: Submission }>(
+    `SELECT data FROM "IntakeSubmission" ORDER BY created_at DESC`,
+  );
+  return rows.map((r) => r.data);
 }
 
 export function tokenMatches(sub: Submission, token: string | null): boolean {
@@ -136,15 +170,40 @@ export function tokenMatches(sub: Submission, token: string | null): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+// Read-modify-write inside a transaction with a row lock, so concurrent updates
+// to the same submission serialize instead of clobbering each other.
 async function update(
   id: string,
   mutate: (sub: Submission) => void,
 ): Promise<Submission | null> {
-  const sub = await getSubmission(id);
-  if (!sub) return null;
-  mutate(sub);
-  await writeJsonAtomic(submissionFile(id), sub);
-  return sub;
+  await ensureSchema();
+  const client: PoolClient = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query<{ data: Submission }>(
+      `SELECT data FROM "IntakeSubmission" WHERE id = $1 FOR UPDATE`,
+      [id],
+    );
+    const sub = rows[0]?.data ?? null;
+    if (!sub) {
+      await client.query("ROLLBACK");
+      return null;
+    }
+    mutate(sub);
+    await client.query(
+      `UPDATE "IntakeSubmission"
+         SET data = $2::jsonb, status = $3, gf_id = $4, updated_at = now()
+       WHERE id = $1`,
+      [id, JSON.stringify(sub), sub.status, sub.gfId],
+    );
+    await client.query("COMMIT");
+    return sub;
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 export async function logEvent(id: string, type: string, actor: string, note?: string) {

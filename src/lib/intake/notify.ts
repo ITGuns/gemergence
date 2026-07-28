@@ -6,8 +6,6 @@
 // Ops notification rides the existing FormSubmit endpoint (same plumbing as
 // the audit form) so the team inbox needs zero new accounts.
 
-import { promises as fs } from "fs";
-import path from "path";
 import nodemailer from "nodemailer";
 import { SITE } from "@/lib/constants";
 import type { Submission } from "./types";
@@ -15,11 +13,11 @@ import { buildAnswerSummary } from "./export";
 import { buildConfirmationEmail, buildLinkEmail } from "./email";
 import { logEvent } from "./store";
 
-const OUTBOX_DIR = path.join(process.cwd(), "data", "intake", "outbox");
-
+// Serverless filesystems are read-only/ephemeral, so we can't drop unsent mail
+// on disk. Log it instead (captured in the platform logs) — and the outcome is
+// always recorded in the submission's event log too, so nothing is silently lost.
 async function writeOutbox(name: string, content: string) {
-  await fs.mkdir(OUTBOX_DIR, { recursive: true });
-  await fs.writeFile(path.join(OUTBOX_DIR, name), content, "utf8");
+  console.warn(`[intake outbox] ${name}\n${content}`);
 }
 
 type Mail = {
