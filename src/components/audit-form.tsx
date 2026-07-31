@@ -101,6 +101,29 @@ export function AuditForm({ id }: { id?: string }) {
         stage: "complete",
         page: window.location.href,
       });
+      // Confirmation to the prospect. Fire-and-forget with keepalive so it
+      // survives the redirect below, and deliberately not awaited: the audit
+      // has already reached the team, so a mail failure must never surface as
+      // a failed submission. Failures are logged server-side.
+      void fetch("/api/audit/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          name: form.name,
+          business: form.biz,
+          email: form.email,
+          website: form.url,
+          phone: form.phone,
+          industry: form.industry,
+          goals: form.goals,
+          notes: form.notes,
+          website_url: "",
+        }),
+      }).catch(() => {
+        /* prospect still reaches /schedule; team already notified */
+      });
+
       try {
         window.localStorage.setItem(INTAKE_KEY, JSON.stringify(form));
         window.localStorage.removeItem(DRAFT_KEY);

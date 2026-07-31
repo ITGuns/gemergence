@@ -217,3 +217,100 @@ export function buildLinkEmail(
     ].join("\n"),
   };
 }
+
+/**
+ * Free Growth Audit — client confirmation. Sent the moment the audit form is
+ * completed, so the prospect has a record and a stated expectation instead of
+ * silence. Deliberately makes no promise the team cannot keep: it confirms
+ * receipt and names the next step, nothing more.
+ */
+export function buildAuditConfirmationEmail(input: {
+  name: string;
+  business: string;
+  email?: string;
+  website?: string;
+  phone?: string;
+  industry?: string;
+  goals?: string[];
+  notes?: string;
+}): { subject: string; html: string; text: string } {
+  const firstName = (input.name || "there").split(" ")[0];
+  const business = input.business || "your business";
+
+  // Their own copy of what they sent — same record-keeping purpose as the
+  // intake confirmation. Empty fields are omitted rather than shown blank.
+  const detail: Array<[string, string | string[] | undefined]> = [
+    ["Your name", input.name],
+    ["Business", input.business],
+    ["Email", input.email],
+    ["Website", input.website],
+    ["Phone", input.phone],
+    ["Industry", input.industry],
+    ["What you want more of", input.goals],
+    ["Anything else", input.notes],
+  ];
+  const detailRows = detail
+    .map(([label, v]) => {
+      const val = fmt(v);
+      if (val === null) return "";
+      return `
+      <tr>
+        <td style="padding:10px 0 2px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:${C.ink2};font-family:Consolas,Menlo,monospace;">${esc(label)}</td>
+      </tr>
+      <tr>
+        <td style="padding:0 0 10px;font-size:15px;line-height:1.5;color:${C.ink};border-bottom:1px solid ${C.hairline};">${val}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const detailText = detail
+    .map(([label, v]) => {
+      const s = Array.isArray(v) ? v.join(" · ") : v;
+      return s && s.trim() !== "" ? `${label}: ${s}` : "";
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  const body = `
+    <h1 style="margin:0 0 14px;font-size:26px;line-height:1.25;color:${C.ink};font-weight:800;">We've got your audit request.</h1>
+    <p style="margin:20px 0 6px;font-size:15px;line-height:1.6;color:${C.ink2};">
+      Hi ${esc(firstName)} — thanks for sending through the details for
+      <strong style="color:${C.ink};">${esc(business)}</strong>.
+      A real person reviews every request. Here's what happens next:
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 6px;">
+      ${step("1", "We review", "we look at your website, your search visibility, and how you currently capture leads.")}
+      ${step("2", "We come back to you", "you get our findings and a straight answer on whether we can help — in under 1 business day.")}
+      ${step("3", "You decide", "the audit is yours either way. No contracts, no pressure.")}
+    </table>
+    <p style="margin:16px 0 6px;font-size:14px;line-height:1.6;color:${C.ink2};">
+      If anything changed or you'd like to add context, just reply to this email — it comes straight to us.
+    </p>
+    <h2 style="margin:26px 0 2px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${C.ink2};font-family:Consolas,Menlo,monospace;font-weight:600;">What you sent us</h2>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 4px;">
+      ${detailRows}
+    </table>
+  `;
+
+  return {
+    subject: `We've got your audit request — ${business}`,
+    html: shell(body, `Thanks ${firstName} — we're reviewing ${business} and will come back in under 1 business day.`),
+    text: [
+      `We've got your audit request.`,
+      ``,
+      `Hi ${firstName} — thanks for sending through the details for ${business}.`,
+      `A real person reviews every request. Here's what happens next:`,
+      ``,
+      `1. We review — your website, search visibility, and how you capture leads.`,
+      `2. We come back to you — findings and a straight answer, in under 1 business day.`,
+      `3. You decide — the audit is yours either way. No contracts, no pressure.`,
+      ``,
+      `If anything changed or you'd like to add context, just reply to this email.`,
+      ``,
+      `WHAT YOU SENT US`,
+      detailText,
+      ``,
+      `— ${SITE.name}`,
+    ].join("\n"),
+  };
+}
