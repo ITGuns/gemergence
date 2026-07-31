@@ -280,7 +280,7 @@ export function buildAuditConfirmationEmail(input: {
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 6px;">
       ${step("1", "We review", "we look at your website, your search visibility, and how you currently capture leads.")}
-      ${step("2", "We come back to you", "you get our findings and a straight answer on whether we can help — within 1 business day.")}
+      ${step("2", "We come back to you", "you get our findings and a straight answer on whether we can help — in under 1 business day.")}
       ${step("3", "You decide", "the audit is yours either way. No contracts, no pressure.")}
     </table>
     <p style="margin:16px 0 6px;font-size:14px;line-height:1.6;color:${C.ink2};">
@@ -294,7 +294,7 @@ export function buildAuditConfirmationEmail(input: {
 
   return {
     subject: `We've got your audit request — ${business}`,
-    html: shell(body, `Thanks ${firstName} — we're reviewing ${business} and will come back within 1 business day.`),
+    html: shell(body, `Thanks ${firstName} — we're reviewing ${business} and will come back in under 1 business day.`),
     text: [
       `We've got your audit request.`,
       ``,
@@ -302,7 +302,7 @@ export function buildAuditConfirmationEmail(input: {
       `A real person reviews every request. Here's what happens next:`,
       ``,
       `1. We review — your website, search visibility, and how you capture leads.`,
-      `2. We come back to you — findings and a straight answer, within 1 business day.`,
+      `2. We come back to you — findings and a straight answer, in under 1 business day.`,
       `3. You decide — the audit is yours either way. No contracts, no pressure.`,
       ``,
       `If anything changed or you'd like to add context, just reply to this email.`,
