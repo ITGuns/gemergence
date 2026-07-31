@@ -217,3 +217,53 @@ export function buildLinkEmail(
     ].join("\n"),
   };
 }
+
+/**
+ * Free Growth Audit — client confirmation. Sent the moment the audit form is
+ * completed, so the prospect has a record and a stated expectation instead of
+ * silence. Deliberately makes no promise the team cannot keep: it confirms
+ * receipt and names the next step, nothing more.
+ */
+export function buildAuditConfirmationEmail(input: {
+  name: string;
+  business: string;
+}): { subject: string; html: string; text: string } {
+  const firstName = (input.name || "there").split(" ")[0];
+  const business = input.business || "your business";
+
+  const body = `
+    <h1 style="margin:0 0 14px;font-size:26px;line-height:1.25;color:${C.ink};font-weight:800;">We've got your audit request.</h1>
+    <p style="margin:20px 0 6px;font-size:15px;line-height:1.6;color:${C.ink2};">
+      Hi ${esc(firstName)} — thanks for sending through the details for
+      <strong style="color:${C.ink};">${esc(business)}</strong>.
+      A real person reviews every request. Here's what happens next:
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 6px;">
+      ${step("1", "We review", "we look at your website, your search visibility, and how you currently capture leads.")}
+      ${step("2", "We come back to you", "you get our findings and a straight answer on whether we can help — within 1 business day.")}
+      ${step("3", "You decide", "the audit is yours either way. No contracts, no pressure.")}
+    </table>
+    <p style="margin:16px 0 6px;font-size:14px;line-height:1.6;color:${C.ink2};">
+      If anything changed or you'd like to add context, just reply to this email — it comes straight to us.
+    </p>
+  `;
+
+  return {
+    subject: `We've got your audit request — ${business}`,
+    html: shell(body, `Thanks ${firstName} — we're reviewing ${business} and will come back within 1 business day.`),
+    text: [
+      `We've got your audit request.`,
+      ``,
+      `Hi ${firstName} — thanks for sending through the details for ${business}.`,
+      `A real person reviews every request. Here's what happens next:`,
+      ``,
+      `1. We review — your website, search visibility, and how you capture leads.`,
+      `2. We come back to you — findings and a straight answer, within 1 business day.`,
+      `3. You decide — the audit is yours either way. No contracts, no pressure.`,
+      ``,
+      `If anything changed or you'd like to add context, just reply to this email.`,
+      ``,
+      `— ${SITE.name}`,
+    ].join("\n"),
+  };
+}

@@ -10,7 +10,7 @@ import nodemailer from "nodemailer";
 import { SITE } from "@/lib/constants";
 import type { Submission } from "./types";
 import { buildAnswerSummary } from "./export";
-import { buildConfirmationEmail, buildLinkEmail } from "./email";
+import { buildAuditConfirmationEmail, buildConfirmationEmail, buildLinkEmail } from "./email";
 import { logEvent } from "./store";
 
 // Serverless filesystems are read-only/ephemeral, so we can't drop unsent mail
@@ -137,6 +137,32 @@ export async function sendIntakeLink(
   await writeOutbox(
     `${sub.gfId}_intake-link.html`,
     `<!-- To: ${sub.contactEmail} · Subject: ${email.subject} · not sent (${res.detail}) -->\n${email.html}`,
+  ).catch(() => {});
+  return { sent: false, detail: res.detail };
+}
+
+/**
+ * Free Growth Audit confirmation to the prospect. There is no submission
+ * record for an audit (it rides FormSubmit to the team inbox), so there is no
+ * event log to write — a failure lands in the platform logs via the outbox.
+ * Never throws: the caller must not let a mail failure break the form.
+ */
+export async function sendAuditConfirmation(input: {
+  name: string;
+  business: string;
+  email: string;
+}): Promise<{ sent: boolean; detail: string }> {
+  const mail = buildAuditConfirmationEmail({ name: input.name, business: input.business });
+  const res = await sendEmail({
+    to: input.email,
+    subject: mail.subject,
+    html: mail.html,
+    text: mail.text,
+  });
+  if (res.ok) return { sent: true, detail: "sent" };
+  await writeOutbox(
+    `audit_${input.email}_confirmation.html`,
+    `<!-- To: ${input.email} · Subject: ${mail.subject} · not sent (${res.detail}) -->\n${mail.html}`,
   ).catch(() => {});
   return { sent: false, detail: res.detail };
 }
