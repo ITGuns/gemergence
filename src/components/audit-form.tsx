@@ -113,6 +113,11 @@ export function AuditForm({ id }: { id?: string }) {
           name: form.name,
           business: form.biz,
           email: form.email,
+          website: form.url,
+          phone: form.phone,
+          industry: form.industry,
+          goals: form.goals,
+          notes: form.notes,
           website_url: "",
         }),
       }).catch(() => {

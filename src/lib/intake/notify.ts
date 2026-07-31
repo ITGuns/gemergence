@@ -151,8 +151,13 @@ export async function sendAuditConfirmation(input: {
   name: string;
   business: string;
   email: string;
+  website?: string;
+  phone?: string;
+  industry?: string;
+  goals?: string[];
+  notes?: string;
 }): Promise<{ sent: boolean; detail: string }> {
-  const mail = buildAuditConfirmationEmail({ name: input.name, business: input.business });
+  const mail = buildAuditConfirmationEmail(input);
   const res = await sendEmail({
     to: input.email,
     subject: mail.subject,

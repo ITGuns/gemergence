@@ -56,7 +56,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
   }
 
-  const result = await sendAuditConfirmation({ name, business, email });
+  // Their own answers, echoed back for record-keeping. Bounded and coerced
+  // here so the template never receives an unexpected shape.
+  const goals = Array.isArray(body.goals)
+    ? body.goals.map((g) => str(g, 80)).filter(Boolean).slice(0, 20)
+    : [];
+
+  const result = await sendAuditConfirmation({
+    name,
+    business,
+    email,
+    website: str(body.website, 300),
+    phone: str(body.phone, 40),
+    industry: str(body.industry, 120),
+    goals,
+    notes: str(body.notes, 2000),
+  });
   // Always 200: the audit itself already reached the team, so a mail failure
   // must not read to the caller as the request having failed.
   return NextResponse.json({ sent: result.sent });
