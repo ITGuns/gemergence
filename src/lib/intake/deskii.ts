@@ -41,6 +41,10 @@ export function buildIntakePayload(sub: Submission): IntakePayload {
     contactName: sub.contactName || "",
     contactEmail: sub.contactEmail || "",
     contactPhone: sub.contactPhone || null,
+    // Deliberately null: the intake has no field for the client's own website.
+    // D-723 ("A website you like") is an inspiration reference — often a
+    // competitor's — so mapping it here would write the wrong URL onto the
+    // organization. Populate only if a field for their current site is added.
     websiteUrl: null,
     tierLabel: sub.tierLabel || null,
     at: sub.submittedAt || new Date().toISOString(),
