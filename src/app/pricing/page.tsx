@@ -108,41 +108,52 @@ export default function PricingPage() {
                   {/* Fixed-price tiers with a Square link let visitors subscribe
                       on the spot; the audit stays available as a softer path.
                       Custom "From $…" tiers keep the quote flow only. */}
-                  {CHECKOUT[t.name] ? (
-                    <div className="mt-7">
-                      <a
-                        href={CHECKOUT[t.name] as string}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`btn w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
-                      >
-                        Subscribe — {t.price}
-                        {t.period}
-                        <ArrowRight size={15} />
-                      </a>
+                  {/* Primary action: subscribe where a checkout link exists,
+                      otherwise the audit stays the lead path. */}
+                  <div className="mt-7">
+                    {CHECKOUT[t.name] ? (
+                      <>
+                        <a
+                          href={CHECKOUT[t.name] as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`btn w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
+                        >
+                          Subscribe — {t.price}
+                          {t.period}
+                          <ArrowRight size={15} />
+                        </a>
+                        <Link
+                          href="/audit"
+                          className="link-arrow mt-3 justify-center text-[0.9rem]"
+                        >
+                          Prefer a call first? Start with a free audit
+                          <ArrowRight size={13} />
+                        </Link>
+                      </>
+                    ) : (
                       <Link
                         href="/audit"
-                        className="link-arrow mt-3 justify-center text-[0.9rem]"
+                        className={`btn w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
                       >
-                        Prefer a call first? Start with a free audit
-                        <ArrowRight size={13} />
+                        Start with the audit
+                        <ArrowRight size={15} />
                       </Link>
-                      <Link
-                        href={`/intake?plan=${t.name.toLowerCase()}`}
-                        className="mt-2 block text-center text-[0.82rem] text-ink2 underline-offset-2 hover:underline"
-                      >
-                        Already subscribed? Complete your 2-minute intake
-                      </Link>
-                    </div>
-                  ) : (
+                    )}
+
+                    {/* Client-facing intake. Rendered for every tier — the
+                        previous link sat inside the CHECKOUT branch, and since
+                        every CHECKOUT value is null it reached no one. The
+                        wizard's public path (source: self_signup) is honeypot-
+                        and rate-limit protected, so this is safe to expose. */}
                     <Link
-                      href="/audit"
-                      className={`btn mt-7 w-full justify-center ${t.highlight ? "btn-primary" : "btn-ghost"}`}
+                      href={`/intake?plan=${t.name.toLowerCase()}`}
+                      className="btn btn-ghost mt-3 w-full justify-center"
                     >
-                      Start with the audit
+                      Start your 2-minute intake
                       <ArrowRight size={15} />
                     </Link>
-                  )}
+                  </div>
                 </article>
               </Reveal>
             ))}
