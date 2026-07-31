@@ -13,10 +13,12 @@ import {
 import {
   finalizeSubmission,
   getSubmission,
+  logEvent,
   saveAnswers,
   tokenMatches,
 } from "@/lib/intake/store";
 import { notifyOps, sendClientConfirmation } from "@/lib/intake/notify";
+import { provisionDeskiiPortal } from "@/lib/intake/deskii";
 import type { Answers } from "@/lib/intake/types";
 
 export async function POST(
@@ -88,6 +90,18 @@ export async function POST(
 
   // Notifications never block the client's confirmation screen.
   await Promise.allSettled([notifyOps(done), sendClientConfirmation(done)]);
+
+  // Hand the portal side to Deskii: organization, project, and the client's
+  // login invite. Recorded either way — a failure here is the signal that the
+  // manual fallback (create the org, enter the GF-ID) is still needed, and it
+  // must never turn a successful intake into a failed one for the client.
+  const portal = await provisionDeskiiPortal(done);
+  await logEvent(
+    done.id,
+    portal.ok ? "portal_provisioned" : "portal_provision_failed",
+    "system",
+    portal.detail,
+  ).catch(() => {});
 
   return NextResponse.json({ ok: true, gfId: done.gfId });
 }
