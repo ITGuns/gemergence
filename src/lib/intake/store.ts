@@ -231,6 +231,19 @@ export async function saveAnswers(
   });
 }
 
+/**
+ * Remove specific answers. saveAnswers merges, so it can never clear a key —
+ * this is the only way to drop answers a client left behind after changing
+ * their industry mid-form.
+ */
+export async function dropAnswers(id: string, ids: string[]): Promise<Submission | null> {
+  if (ids.length === 0) return getSubmission(id);
+  return update(id, (s) => {
+    if (s.status === "submitted") throw new Error("Submission is final");
+    for (const key of ids) delete s.answers[key];
+  });
+}
+
 export async function markOpened(id: string) {
   await update(id, (s) => {
     if (s.status === "created" || s.status === "sent") {

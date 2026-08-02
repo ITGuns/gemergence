@@ -278,10 +278,19 @@ export function IntakeWizard({ resume, plan }: Props) {
           return;
         }
         setSubmitState("error");
+        // Say what actually happened. The generic line used to swallow every
+        // non-missing rejection, so a client could retry forever with no idea
+        // what to change.
         setSubmitProblem(
           data.missing?.length
             ? "A required answer is missing — use the Edit links above to fill it in."
-            : "That didn't go through. Please try again.",
+            : res.status === 404
+              ? "We couldn't find this intake. Please reopen the link from your email."
+              : res.status >= 500
+                ? "Something broke on our side — your answers are saved. Please try again in a moment."
+                : typeof data.error === "string" && data.error !== "Validation failed"
+                  ? data.error
+                  : "That didn't go through. Please try again.",
         );
         return;
       }

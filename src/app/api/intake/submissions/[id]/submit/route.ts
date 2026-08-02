@@ -11,6 +11,7 @@ import {
   validateSubmission,
 } from "@/lib/intake/schema";
 import {
+  dropAnswers,
   finalizeSubmission,
   getSubmission,
   logEvent,
@@ -78,9 +79,28 @@ export async function POST(
   }
 
   const { missing, foreign } = validateSubmission(answers, nicheKey);
-  if (missing.length || foreign.length) {
+
+  // Foreign answers are stale, not hostile: they are what a client leaves behind
+  // when they pick an industry, answer its questions, then change their mind.
+  // Rejecting the submission for them was unrecoverable - the answers are
+  // already stored, so every retry failed identically, and the wizard has no
+  // message for this case so it showed only "That didn't go through". Drop them
+  // and continue; the id shape is already filtered on write, and the export must
+  // never carry another niche's answers either way.
+  if (foreign.length) {
+    for (const key of foreign) delete answers[key];
+    await dropAnswers(fresh.id, foreign).catch(() => {});
+    await logEvent(
+      fresh.id,
+      "stale_answers_dropped",
+      "system",
+      `changed industry: ${foreign.join(", ")}`,
+    ).catch(() => {});
+  }
+
+  if (missing.length) {
     return NextResponse.json(
-      { error: "Validation failed", missing, foreign },
+      { error: "Validation failed", missing, foreign: [] },
       { status: 422 },
     );
   }
