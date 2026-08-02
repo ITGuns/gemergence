@@ -88,13 +88,19 @@ export async function POST(
   const done = await finalizeSubmission(id, nicheKey, trade);
   if (!done) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Notifications never block the client's confirmation screen.
-  await Promise.allSettled([notifyOps(done), sendClientConfirmation(done)]);
-
-  // Hand the portal side to Deskii: organization, project, and the client's
-  // login invite. Recorded either way — a failure here is the signal that the
-  // manual fallback (create the org, enter the GF-ID) is still needed, and it
-  // must never turn a successful intake into a failed one for the client.
+  // Portal first, confirmation second — deliberately sequential. Deskii returns
+  // the client's setup link rather than mailing it (a Deskii-branded credentials
+  // email to someone who only knows Gemfield reads as phishing), so the link has
+  // to be in hand before the confirmation is composed. Ops notification runs
+  // alongside since it needs nothing from Deskii.
+  //
+  // Provisioning is recorded either way — a failure is the signal that the manual
+  // fallback (create the org, enter the GF-ID, invite the client) is still needed,
+  // and it must never turn a successful intake into a failed one for the client.
+  // If it fails, the confirmation still goes out; it just carries no portal block.
+  // Handler attached at creation: it is awaited only after provisioning returns,
+  // and an unhandled rejection in that window would be reported as a crash.
+  const opsNotified = notifyOps(done).catch(() => {});
   const portal = await provisionDeskiiPortal(done);
   await logEvent(
     done.id,
@@ -102,6 +108,8 @@ export async function POST(
     "system",
     portal.detail,
   ).catch(() => {});
+
+  await Promise.allSettled([opsNotified, sendClientConfirmation(done, portal.portal)]);
 
   return NextResponse.json({ ok: true, gfId: done.gfId });
 }
