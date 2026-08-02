@@ -97,7 +97,13 @@ export async function provisionDeskiiPortal(sub: Submission): Promise<ProvisionR
         "X-Gemfield-Signature": signature,
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(15_000),
+      // Must stay comfortably inside the serverless function budget. At 15s a
+      // cold backend (a free-tier host that sleeps takes 30-60s to wake) held
+      // the request until the platform killed the whole function, so the client
+      // saw "that didn't go through" on an intake that had already been saved.
+      // Provisioning is the optional half of this route; it never gets to be
+      // the reason a client cannot submit.
+      signal: AbortSignal.timeout(6_000),
     });
     const text = await res.text();
     if (!res.ok) return { ok: false, detail: `Deskii ${res.status}: ${text.slice(0, 200)}` };

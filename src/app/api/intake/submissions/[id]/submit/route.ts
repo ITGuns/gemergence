@@ -21,6 +21,12 @@ import { notifyOps, sendClientConfirmation } from "@/lib/intake/notify";
 import { provisionDeskiiPortal } from "@/lib/intake/deskii";
 import type { Answers } from "@/lib/intake/types";
 
+// This route does real work after validation: an ops notification, a portal
+// handoff, and an SMTP send. The platform default (10s on some plans) is not
+// enough headroom for all three, and being killed mid-flight surfaces to the
+// client as a failed intake even though the submission is already stored.
+export const maxDuration = 60;
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
