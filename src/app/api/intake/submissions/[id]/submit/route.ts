@@ -11,6 +11,7 @@ import {
   validateSubmission,
 } from "@/lib/intake/schema";
 import {
+  dropAnswers,
   finalizeSubmission,
   getSubmission,
   logEvent,
@@ -20,6 +21,12 @@ import {
 import { notifyOps, sendClientConfirmation } from "@/lib/intake/notify";
 import { provisionDeskiiPortal } from "@/lib/intake/deskii";
 import type { Answers } from "@/lib/intake/types";
+
+// This route does real work after validation: an ops notification, a portal
+// handoff, and an SMTP send. The platform default (10s on some plans) is not
+// enough headroom for all three, and being killed mid-flight surfaces to the
+// client as a failed intake even though the submission is already stored.
+export const maxDuration = 60;
 
 export async function POST(
   req: NextRequest,
@@ -72,9 +79,28 @@ export async function POST(
   }
 
   const { missing, foreign } = validateSubmission(answers, nicheKey);
-  if (missing.length || foreign.length) {
+
+  // Foreign answers are stale, not hostile: they are what a client leaves behind
+  // when they pick an industry, answer its questions, then change their mind.
+  // Rejecting the submission for them was unrecoverable - the answers are
+  // already stored, so every retry failed identically, and the wizard has no
+  // message for this case so it showed only "That didn't go through". Drop them
+  // and continue; the id shape is already filtered on write, and the export must
+  // never carry another niche's answers either way.
+  if (foreign.length) {
+    for (const key of foreign) delete answers[key];
+    await dropAnswers(fresh.id, foreign).catch(() => {});
+    await logEvent(
+      fresh.id,
+      "stale_answers_dropped",
+      "system",
+      `changed industry: ${foreign.join(", ")}`,
+    ).catch(() => {});
+  }
+
+  if (missing.length) {
     return NextResponse.json(
-      { error: "Validation failed", missing, foreign },
+      { error: "Validation failed", missing, foreign: [] },
       { status: 422 },
     );
   }
@@ -88,13 +114,19 @@ export async function POST(
   const done = await finalizeSubmission(id, nicheKey, trade);
   if (!done) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Notifications never block the client's confirmation screen.
-  await Promise.allSettled([notifyOps(done), sendClientConfirmation(done)]);
-
-  // Hand the portal side to Deskii: organization, project, and the client's
-  // login invite. Recorded either way — a failure here is the signal that the
-  // manual fallback (create the org, enter the GF-ID) is still needed, and it
-  // must never turn a successful intake into a failed one for the client.
+  // Portal first, confirmation second — deliberately sequential. Deskii returns
+  // the client's setup link rather than mailing it (a Deskii-branded credentials
+  // email to someone who only knows Gemfield reads as phishing), so the link has
+  // to be in hand before the confirmation is composed. Ops notification runs
+  // alongside since it needs nothing from Deskii.
+  //
+  // Provisioning is recorded either way — a failure is the signal that the manual
+  // fallback (create the org, enter the GF-ID, invite the client) is still needed,
+  // and it must never turn a successful intake into a failed one for the client.
+  // If it fails, the confirmation still goes out; it just carries no portal block.
+  // Handler attached at creation: it is awaited only after provisioning returns,
+  // and an unhandled rejection in that window would be reported as a crash.
+  const opsNotified = notifyOps(done).catch(() => {});
   const portal = await provisionDeskiiPortal(done);
   await logEvent(
     done.id,
@@ -102,6 +134,8 @@ export async function POST(
     "system",
     portal.detail,
   ).catch(() => {});
+
+  await Promise.allSettled([opsNotified, sendClientConfirmation(done, portal.portal)]);
 
   return NextResponse.json({ ok: true, gfId: done.gfId });
 }

@@ -106,8 +106,111 @@ function step(n: string, title: string, copy: string): string {
     </tr>`;
 }
 
-/** Post-submit confirmation: the client's complete copy of their answers. */
-export function buildConfirmationEmail(sub: Submission): {
+/** Portal access handed back by Deskii's provisioning webhook. */
+export type PortalBlock = {
+  setupUrl?: string;
+  loginUrl?: string;
+  expiresInMinutes?: number;
+};
+
+/** "in 7 days" / "in 24 hours" — no client should be counting minutes. */
+function expiryPhrase(minutes: number): string {
+  const days = Math.round(minutes / 1440);
+  if (days >= 1) return `${days} ${days === 1 ? "day" : "days"}`;
+  const hours = Math.max(1, Math.round(minutes / 60));
+  return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+}
+
+/**
+ * Where the portal lives, taken from the origin of the link we are already
+ * sending. Deriving it rather than reading a second env var means the address we
+ * tell them to bookmark is, by construction, the one they just set their
+ * password on — the two cannot drift apart.
+ */
+function portalHome(url: string): { href: string; label: string } | null {
+  try {
+    const u = new URL(url);
+    return { href: u.origin, label: u.host };
+  } catch {
+    return null;
+  }
+}
+
+/** Plain-text twin of the sign-in line. Empty string when there is nothing to say. */
+function signInLine(url: string, accountEmail?: string): string {
+  const home = portalHome(url);
+  const bits = [
+    accountEmail ? `your username is ${accountEmail}` : "",
+    home ? `your portal lives at ${home.label} — worth a bookmark` : "",
+  ].filter(Boolean);
+  return bits.length ? `Signing in later: ${bits.join(", and ")}.` : "";
+}
+
+/**
+ * The client's portal, inside this same email rather than a separate message.
+ * A second mail carrying the portal credentials arrives from a brand the client
+ * has never dealt with, about an account they never created — indistinguishable
+ * from phishing, and the reason it belongs here.
+ *
+ * The setup link is one-time and expires, so on its own it leaves the client
+ * with nothing to come back to next month. The sign-in line is what makes the
+ * portal findable after that: their username, and a host worth bookmarking.
+ */
+function portalCard(portal: PortalBlock, accountEmail?: string): string {
+  const url = portal.setupUrl || portal.loginUrl;
+  if (!url) return "";
+  const isSetup = Boolean(portal.setupUrl);
+  const cta = isSetup ? "Set up my portal &rarr;" : "Open my portal &rarr;";
+  const copy = isSetup
+    ? "Track every phase, send us files, and ask questions in one place. Pick your password and it's yours."
+    : "Track every phase, send us files, and ask questions in one place. Sign in with the password you already use.";
+  const expiry =
+    isSetup && portal.expiresInMinutes
+      ? `<p style="margin:10px 0 0;font-size:12px;line-height:1.5;color:${C.ink2};">This link is yours alone — please don't forward it. It expires in ${esc(expiryPhrase(portal.expiresInMinutes))}; if it lapses, just reply and we'll send a fresh one.</p>`
+      : "";
+
+  // The button above dies once used or expired. This is the part that still
+  // works in a month: who they are, and where to go.
+  const home = portalHome(url);
+  const signInBits = [
+    accountEmail
+      ? `your username is <strong style="color:${C.ink};">${esc(accountEmail)}</strong>`
+      : "",
+    home
+      ? `your portal lives at <a href="${esc(home.href)}" style="color:${C.emerald};">${esc(home.label)}</a> — worth a bookmark`
+      : "",
+  ].filter(Boolean);
+  const signIn = signInBits.length
+    ? `<p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${C.ink2};">Signing in later: ${signInBits.join(", and ")}.</p>`
+    : "";
+
+  return `
+    <div style="margin:22px 0 4px;background:${C.tint};border:1px solid ${C.hairline};border-radius:12px;padding:20px 22px;">
+      <h2 style="margin:0 0 6px;font-size:17px;line-height:1.35;color:${C.ink};font-weight:800;">Your project portal is ready</h2>
+      <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.ink2};">${copy}</p>
+      <table role="presentation" cellpadding="0" cellspacing="0">
+        <tr><td style="background:${C.emerald};border-radius:10px;">
+          <a href="${esc(url)}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${cta}</a>
+        </td></tr>
+      </table>
+      ${signIn}
+      <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:${C.ink2};">
+        Button not working? Paste this into your browser:<br>
+        <a href="${esc(url)}" style="color:${C.emerald};word-break:break-all;">${esc(url)}</a>
+      </p>
+      ${expiry}
+    </div>`;
+}
+
+/**
+ * Post-submit confirmation: the client's complete copy of their answers, plus
+ * their portal access when Deskii provisioned it in time. One email, one sender,
+ * one brand — everything the client needs after submitting.
+ */
+export function buildConfirmationEmail(
+  sub: Submission,
+  portal?: PortalBlock,
+): {
   subject: string;
   html: string;
   text: string;
@@ -115,6 +218,7 @@ export function buildConfirmationEmail(sub: Submission): {
   const firstName = (sub.contactName || "there").split(" ")[0];
   const wantsUpload =
     typeof sub.answers["D-722"] === "string" && sub.answers["D-722"] !== "Neither yet";
+  const portalUrl = portal?.setupUrl || portal?.loginUrl;
 
   const body = `
     <h1 style="margin:0 0 14px;font-size:26px;line-height:1.25;color:${C.ink};font-weight:800;">Your website is underway.</h1>
@@ -129,6 +233,7 @@ export function buildConfirmationEmail(sub: Submission): {
       ${step("2", "Design & build", "we create your site from your answers below — nothing generic.")}
       ${step("3", "Your preview", "you get a live link to review and refine. Nothing launches without your sign-off.")}
     </table>
+    ${portal ? portalCard(portal, sub.contactEmail) : ""}
     ${
       wantsUpload
         ? `<div style="margin:16px 0 4px;background:${C.paper};border:1px solid ${C.hairline};border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.55;color:${C.ink2};">
@@ -151,6 +256,21 @@ export function buildConfirmationEmail(sub: Submission): {
     `Hi ${firstName}, thanks for the intake for ${sub.businessName}.`,
     `Next: 1) research  2) design & build  3) your live preview to refine.`,
     wantsUpload ? `Logo & photos: reply to this email with files attached.` : ``,
+    ...(portalUrl
+      ? [
+          ``,
+          `YOUR PROJECT PORTAL`,
+          portal?.setupUrl
+            ? `Pick a password and track every phase in one place:`
+            : `Sign in with your existing password to track every phase:`,
+          portalUrl,
+          portal?.setupUrl && portal.expiresInMinutes
+            ? `This link is yours alone — please don't forward it. It expires in ${expiryPhrase(portal.expiresInMinutes)}.`
+            : ``,
+          // Survives the link's expiry — how to get back in next month.
+          signInLine(portalUrl, sub.contactEmail),
+        ]
+      : []),
     ``,
     `Your answers:`,
   ];

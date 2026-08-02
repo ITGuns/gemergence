@@ -26,6 +26,20 @@ returns; no question text exists in component code.
 Every send's outcome (including any provider error) is written to the
 submission's event log.
 
+## The client gets exactly one email on submit
+
+The confirmation (`buildConfirmationEmail`) carries the answers **and** the
+Deskii portal setup link. Submit provisions Deskii *first* (`provisionDeskiiPortal`),
+which creates the org/project and returns `portalSetupUrl` without emailing
+anyone, then composes the confirmation around it. A separate Deskii-branded
+credentials mail to a client who has only ever dealt with Gemfield reads as
+phishing — hence one message, from one sender, under one brand.
+
+If Deskii is down or unconfigured, the confirmation still goes out with no
+portal block and `portal_provision_failed` lands in the event log — the signal
+that staff must create the org and invite the client by hand. The confirmation
+never reaches the outbox with a live setup token in it; that body is withheld.
+
 ## Adding or editing a niche — schema only, no code
 
 1. Add a block under `niche` in `gemfield_intake_schema_v2.json`:

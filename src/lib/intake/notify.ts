@@ -10,7 +10,12 @@ import nodemailer from "nodemailer";
 import { SITE } from "@/lib/constants";
 import type { Submission } from "./types";
 import { buildAnswerSummary } from "./export";
-import { buildAuditConfirmationEmail, buildConfirmationEmail, buildLinkEmail } from "./email";
+import {
+  buildAuditConfirmationEmail,
+  buildConfirmationEmail,
+  buildLinkEmail,
+  type PortalBlock,
+} from "./email";
 import { logEvent } from "./store";
 
 // Serverless filesystems are read-only/ephemeral, so we can't drop unsent mail
@@ -89,27 +94,37 @@ export async function notifyOps(sub: Submission) {
 
 /**
  * Client confirmation — their complete copy of the answers (record-keeping /
- * dispute prevention). Resend first; outbox fallback. Outcome is written to
- * the submission's event log either way. Never throws.
+ * dispute prevention) and, when Deskii returned it, their portal access. This
+ * is the only email the client gets after submitting; the portal link rides
+ * along instead of arriving separately under a brand they don't recognise.
+ * Outcome is written to the submission's event log either way. Never throws.
  */
-export async function sendClientConfirmation(sub: Submission) {
-  const email = buildConfirmationEmail(sub);
+export async function sendClientConfirmation(sub: Submission, portal?: PortalBlock) {
+  const email = buildConfirmationEmail(sub, portal);
   const sent = await sendEmail({
     to: sub.contactEmail,
     subject: email.subject,
     html: email.html,
     text: email.text,
   });
+  const carried = portal?.setupUrl ? " with portal setup link" : "";
   if (sent.ok) {
-    await logEvent(sub.id, "confirmation_emailed", "system", `to ${sub.contactEmail}`).catch(
-      () => {},
-    );
+    await logEvent(
+      sub.id,
+      "confirmation_emailed",
+      "system",
+      `to ${sub.contactEmail}${carried}`,
+    ).catch(() => {});
     return;
   }
   await logEvent(sub.id, "confirmation_email_failed", "system", sent.detail).catch(() => {});
+  // The outbox copy holds a live setup token, so it is the one thing here that
+  // must not reach the platform logs. Staff re-issue from the Deskii panel.
   await writeOutbox(
     `${sub.gfId}_client-confirmation.html`,
-    `<!-- To: ${sub.contactEmail} · Subject: ${email.subject} · not sent (${sent.detail}) -->\n${email.html}`,
+    portal?.setupUrl
+      ? `<!-- To: ${sub.contactEmail} · Subject: ${email.subject} · not sent (${sent.detail}) · body withheld: contains a portal setup token. Re-invite the client from Deskii. -->`
+      : `<!-- To: ${sub.contactEmail} · Subject: ${email.subject} · not sent (${sent.detail}) -->\n${email.html}`,
   ).catch(() => {});
 }
 
