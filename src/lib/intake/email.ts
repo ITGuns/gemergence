@@ -122,12 +122,41 @@ function expiryPhrase(minutes: number): string {
 }
 
 /**
+ * Where the portal lives, taken from the origin of the link we are already
+ * sending. Deriving it rather than reading a second env var means the address we
+ * tell them to bookmark is, by construction, the one they just set their
+ * password on — the two cannot drift apart.
+ */
+function portalHome(url: string): { href: string; label: string } | null {
+  try {
+    const u = new URL(url);
+    return { href: u.origin, label: u.host };
+  } catch {
+    return null;
+  }
+}
+
+/** Plain-text twin of the sign-in line. Empty string when there is nothing to say. */
+function signInLine(url: string, accountEmail?: string): string {
+  const home = portalHome(url);
+  const bits = [
+    accountEmail ? `your username is ${accountEmail}` : "",
+    home ? `your portal lives at ${home.label} — worth a bookmark` : "",
+  ].filter(Boolean);
+  return bits.length ? `Signing in later: ${bits.join(", and ")}.` : "";
+}
+
+/**
  * The client's portal, inside this same email rather than a separate message.
  * A second mail carrying the portal credentials arrives from a brand the client
  * has never dealt with, about an account they never created — indistinguishable
  * from phishing, and the reason it belongs here.
+ *
+ * The setup link is one-time and expires, so on its own it leaves the client
+ * with nothing to come back to next month. The sign-in line is what makes the
+ * portal findable after that: their username, and a host worth bookmarking.
  */
-function portalCard(portal: PortalBlock): string {
+function portalCard(portal: PortalBlock, accountEmail?: string): string {
   const url = portal.setupUrl || portal.loginUrl;
   if (!url) return "";
   const isSetup = Boolean(portal.setupUrl);
@@ -140,6 +169,21 @@ function portalCard(portal: PortalBlock): string {
       ? `<p style="margin:10px 0 0;font-size:12px;line-height:1.5;color:${C.ink2};">This link is yours alone — please don't forward it. It expires in ${esc(expiryPhrase(portal.expiresInMinutes))}; if it lapses, just reply and we'll send a fresh one.</p>`
       : "";
 
+  // The button above dies once used or expired. This is the part that still
+  // works in a month: who they are, and where to go.
+  const home = portalHome(url);
+  const signInBits = [
+    accountEmail
+      ? `your username is <strong style="color:${C.ink};">${esc(accountEmail)}</strong>`
+      : "",
+    home
+      ? `your portal lives at <a href="${esc(home.href)}" style="color:${C.emerald};">${esc(home.label)}</a> — worth a bookmark`
+      : "",
+  ].filter(Boolean);
+  const signIn = signInBits.length
+    ? `<p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${C.ink2};">Signing in later: ${signInBits.join(", and ")}.</p>`
+    : "";
+
   return `
     <div style="margin:22px 0 4px;background:${C.tint};border:1px solid ${C.hairline};border-radius:12px;padding:20px 22px;">
       <h2 style="margin:0 0 6px;font-size:17px;line-height:1.35;color:${C.ink};font-weight:800;">Your project portal is ready</h2>
@@ -149,6 +193,7 @@ function portalCard(portal: PortalBlock): string {
           <a href="${esc(url)}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${cta}</a>
         </td></tr>
       </table>
+      ${signIn}
       <p style="margin:14px 0 0;font-size:12px;line-height:1.5;color:${C.ink2};">
         Button not working? Paste this into your browser:<br>
         <a href="${esc(url)}" style="color:${C.emerald};word-break:break-all;">${esc(url)}</a>
@@ -188,7 +233,7 @@ export function buildConfirmationEmail(
       ${step("2", "Design & build", "we create your site from your answers below — nothing generic.")}
       ${step("3", "Your preview", "you get a live link to review and refine. Nothing launches without your sign-off.")}
     </table>
-    ${portal ? portalCard(portal) : ""}
+    ${portal ? portalCard(portal, sub.contactEmail) : ""}
     ${
       wantsUpload
         ? `<div style="margin:16px 0 4px;background:${C.paper};border:1px solid ${C.hairline};border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.55;color:${C.ink2};">
@@ -222,6 +267,8 @@ export function buildConfirmationEmail(
           portal?.setupUrl && portal.expiresInMinutes
             ? `This link is yours alone — please don't forward it. It expires in ${expiryPhrase(portal.expiresInMinutes)}.`
             : ``,
+          // Survives the link's expiry — how to get back in next month.
+          signInLine(portalUrl, sub.contactEmail),
         ]
       : []),
     ``,
