@@ -56,7 +56,7 @@ export default function AuditPage() {
               </ul>
             </Reveal>
 
-            {/* Named-human slot (SITE-PLAN §2) — placeholder until founder details land. */}
+            {/* Named-human slot — placeholder until founder details land. */}
             <Reveal delay={180}>
               <div className="mt-10 flex items-center gap-4 rounded-xl border border-hairline bg-surface p-5">
                 <span

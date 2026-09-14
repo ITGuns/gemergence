@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
 };
 
-// AEO: machine-readable entity description (SITE-PLAN §8).
+// AEO: machine-readable entity description.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",

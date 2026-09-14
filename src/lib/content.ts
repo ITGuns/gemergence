@@ -1,6 +1,6 @@
 /**
- * All site copy, sourced from "Gemfield Website Copy And Tier Products.pdf"
- * and SITE-PLAN.md. Edit copy here, not in components.
+ * All site copy, sourced from "Gemfield Website Copy And Tier Products.pdf".
+ * Edit copy here, not in components.
  */
 
 export const HERO = {
@@ -156,9 +156,9 @@ export const OFFER = {
   cta: "See if your business qualifies",
 };
 
-// Free-build ownership model (SITE-PLAN.md §11 item 0), confirmed by the founder
-// 2026-09-15: the build vests to the client after six months on any plan, with a
-// buyout available before that. /terms and the signed services agreement must match.
+// Free-build ownership model, confirmed by the founder 2026-09-15: the build
+// vests to the client after six months on any plan, with a buyout available
+// before that. /terms and the signed services agreement must match.
 export const OWNERSHIP = {
   eyebrow: "The ownership pledge",
   h: "You own everything. Leave anytime.",
@@ -334,7 +334,7 @@ export const WHY = {
     "We focus on visibility, lead capture, follow-up, reviews, and reporting.",
   ],
   founder: {
-    // Placeholder (SITE-PLAN §11): swap name, role-line, bio, and photo when provided.
+    // Placeholder: swap name, role-line, bio, and photo when provided.
     name: "Founder, Gemfield Consulting",
     line: "Every audit request lands on my desk, and I review it personally before our call.",
     location: "San Francisco · Serving service businesses across the United States",

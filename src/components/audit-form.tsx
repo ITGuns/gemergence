@@ -35,7 +35,7 @@ export function AuditForm({ id }: { id?: string }) {
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
   const partialSent = useRef(false);
 
-  // Restore a saved draft (progressive capture, SITE-PLAN §2). Must run in an
+  // Restore a saved draft (progressive capture). Must run in an
   // effect — reading localStorage during render would break SSR hydration.
   useEffect(() => {
     try {

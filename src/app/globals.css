@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── Ink & Emerald design tokens (SITE-PLAN.md §7) ── */
+/* ── Ink & Emerald design tokens ── */
 @theme inline {
   --color-paper: #fafaf7;
   --color-surface: #f2f2ec;

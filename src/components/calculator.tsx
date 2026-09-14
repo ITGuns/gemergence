@@ -11,7 +11,7 @@ const PLANS = [
   { name: "Scale", cost: 1497 },
 ];
 
-/** Revenue opportunity calculator (SITE-PLAN §5 — from the founder's SOP §8.3). */
+/** Revenue opportunity calculator (from the founder's SOP §8.3). */
 export function RevenueCalculator() {
   const [value, setValue] = useState(450);
   const [clients, setClients] = useState(5);

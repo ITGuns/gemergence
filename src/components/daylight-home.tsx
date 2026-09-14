@@ -329,7 +329,7 @@ export default function DaylightHome() {
                 </li>
               ))}
             </ul>
-            {/* Founder block — placeholder content (SITE-PLAN §11). */}
+            {/* Founder block — placeholder content. */}
             <div className="mt-8 flex items-center gap-4 border-t border-ink/15 pt-6">
               <span
                 className="font-display flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tint text-[1.3rem] text-emerald-deep"

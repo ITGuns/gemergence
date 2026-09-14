@@ -771,7 +771,7 @@ export default function ImmersiveHome() {
                     </li>
                   ))}
                 </ul>
-                {/* Founder block — placeholder content (SITE-PLAN §11). */}
+                {/* Founder block — placeholder content. */}
                 <div className="mt-8 flex items-center gap-4 border-t border-band-line pt-6">
                   <span
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#7fc8ad]/10 font-display text-[1.3rem] text-[#7fc8ad]"

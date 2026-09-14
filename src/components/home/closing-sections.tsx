@@ -272,7 +272,7 @@ export function Why() {
           </ul>
         </Reveal>
         <Reveal className="lg:col-span-5 lg:col-start-8" delay={120}>
-          {/* Founder block — placeholder content (SITE-PLAN §11): swap name/photo when provided. */}
+          {/* Founder block — placeholder content: swap name/photo when provided. */}
           <div className="hairline-card p-7">
             <div
               className="flex h-44 w-full items-center justify-center rounded-lg bg-tint"

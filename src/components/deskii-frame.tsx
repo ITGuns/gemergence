@@ -1,5 +1,5 @@
 /**
- * Deskii placeholder previews (SITE-PLAN §11: real seeded screenshots pending).
+ * Deskii placeholder previews (real seeded screenshots pending).
  * Hand-drawn UI mocks in the product's dark idiom — straight-on, minimal
  * browser chrome, honest "sample workspace" labeling. Swap for production
  * screenshots when captured.
@@ -215,7 +215,7 @@ export function DeskiiCrop({ kind }: { kind: string }) {
   }
 }
 
-/** Before/after demonstration panels (SITE-PLAN §4 S10). */
+/** Before/after demonstration panels. */
 export function BeforeAfter({
   before,
   after,
