@@ -7,9 +7,10 @@ export const metadata: Metadata = {
 };
 
 /*
- * Plain-English baseline terms. Encodes the DRAFT free-build ownership model
- * from SITE-PLAN §11 item 0 — founder must confirm, and counsel should review,
- * before launch. The signed services agreement governs client engagements.
+ * Plain-English baseline terms. The free-build ownership model (SITE-PLAN §11
+ * item 0) is confirmed: the build vests after six months on any plan, with a
+ * buyout available before that (founder, 2026-09-15). Counsel review of this
+ * page is still pending. The signed services agreement governs client engagements.
  */
 export default function TermsPage() {
   return (

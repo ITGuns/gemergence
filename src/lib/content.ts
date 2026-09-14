@@ -156,8 +156,9 @@ export const OFFER = {
   cta: "See if your business qualifies",
 };
 
-// NOTE: Free-build ownership terms below implement the recommended model from
-// SITE-PLAN.md §11 item 0 (DRAFT — founder must confirm before launch).
+// Free-build ownership model (SITE-PLAN.md §11 item 0), confirmed by the founder
+// 2026-09-15: the build vests to the client after six months on any plan, with a
+// buyout available before that. /terms and the signed services agreement must match.
 export const OWNERSHIP = {
   eyebrow: "The ownership pledge",
   h: "You own everything. Leave anytime.",

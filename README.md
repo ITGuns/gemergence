@@ -21,7 +21,7 @@ npm run lint
 
 ## Before launch (gates)
 
-1. **Ownership model (SITE-PLAN §11 item 0)** — confirm the free-build terms; pledge copy, /terms, and the license agreement must match. Counsel review of /privacy and /terms.
+1. **Ownership model (SITE-PLAN §11 item 0)** — confirmed 2026-09-15: free-build websites vest to the client after six months on any plan, with a buyout available before that. Pledge copy and /terms match. Still open: the signed services agreement must say the same, and counsel review of /privacy and /terms.
 2. Founder name/photo/bio → replace placeholders.
 3. Clean Deskii screenshots with seeded demo data → replace `deskii-frame.tsx` mocks.
 4. Confirm domain DNS, Calendly URL, and FormSubmit endpoint activation; set up SPF/DKIM/DMARC before nurture emails.
