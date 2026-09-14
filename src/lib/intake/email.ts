@@ -5,7 +5,6 @@
 import type { Submission } from "./types";
 import {
   coreFields,
-  fieldById,
   nicheFields,
   NICHE_SELECTOR,
   TRADE_SELECTOR,

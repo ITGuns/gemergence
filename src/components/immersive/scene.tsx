@@ -2409,9 +2409,6 @@ function CtaExhibit() {
 /* ── Exhibit stage: one Fade per section, anchored to the open side ── */
 function Exhibits() {
   const at = (id: SectionId, y = -0.1): [number, number, number] => [X_SIDE(id) * AX, y, 0];
-  const is = (id: SectionId) => () => SECTION_IDS[journey.sec] === id;
-  /** Exhibits flow in from the screen edge toward their anchor. */
-  const sl = (id: SectionId) => X_SIDE(id) * 0.7;
   const pillar = (i: number) => () =>
     SECTION_IDS[journey.sec] === "system" && Math.min(6, Math.floor(journey.sys * 7)) === i;
 
