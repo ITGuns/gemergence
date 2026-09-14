@@ -1,7 +1,6 @@
 # Gemfield Consulting — Website
 
 The production site for gemfieldconsulting.com. Next.js (App Router, fully static) + TypeScript + Tailwind v4.
-Strategy and design system: see `../SITE-PLAN.md` and `../COMPETITOR-REPORT.md`.
 
 ## Develop
 
