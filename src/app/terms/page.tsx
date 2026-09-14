@@ -17,7 +17,7 @@ export default function TermsPage() {
       <div className="container-g max-w-3xl">
         <p className="eyebrow">Legal</p>
         <h1 className="font-display h1 mt-5 !text-[clamp(2rem,4vw,3rem)]">Terms of Service</h1>
-        <p className="mono-num mt-3 text-[0.85rem] text-ink2">Last updated: June 11, 2026</p>
+        <p className="mono-num mt-3 text-[0.85rem] text-ink2">Last updated: September 15, 2026</p>
 
         <div className="mt-10 space-y-8 leading-relaxed text-ink2 [&_h2]:font-display [&_h2]:text-[1.4rem] [&_h2]:text-ink">
           <div>
@@ -44,7 +44,7 @@ export default function TermsPage() {
               Your domain, your content, your customer data, and your business accounts (Google,
               analytics, advertising) are yours from day one — registered and held in your name. For
               websites we build as part of a monthly plan, the build itself becomes fully yours
-              after 12 months on any plan, or you may buy it out at any time before that at a
+              after six months on any plan, or you may buy it out at any time before that at a
               published price. Standalone (Website-Only) builds are yours outright on final payment.
               When an engagement ends, we hand over access and provide a complete export of your
               data.

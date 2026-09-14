@@ -168,7 +168,7 @@ export const OWNERSHIP = {
     { k: "Your accounts", v: "Google, analytics, and ad accounts live in your name." },
   ],
   terms:
-    "All plans are month-to-month. No long-term contracts, no auto-renewal traps, no hostage-taking. Free-build websites work like this, stated plainly: the build becomes fully yours after 12 months on any plan — or buy it out anytime before that. Either way, if you leave, we hand over the keys and wish you well.",
+    "All plans are month-to-month. No long-term contracts, no auto-renewal traps, no hostage-taking. Free-build websites work like this, stated plainly: the build becomes fully yours after six months on any plan — or buy it out anytime before that. Either way, if you leave, we hand over the keys and wish you well.",
   kicker: "If you've been burned by a marketing contract before, this section is for you.",
 };
 
@@ -544,7 +544,7 @@ export const PRICING_PAGE = {
     },
     {
       q: "Who owns the website?",
-      a: "You do. Your domain, content, data, and accounts are yours from day one. Free-build websites become fully yours after 12 months on any plan — or buy the build out anytime before that. Website-Only builds are yours outright on final payment. Either way, if you leave, everything comes with you.",
+      a: "You do. Your domain, content, data, and accounts are yours from day one. Free-build websites become fully yours after six months on any plan — or buy the build out anytime before that. Website-Only builds are yours outright on final payment. Either way, if you leave, everything comes with you.",
     },
     {
       q: "Can you just run our ads?",
