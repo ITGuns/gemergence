@@ -2,7 +2,7 @@
 
 // Schema-driven field renderers for the intake wizard. All question text
 // arrives via the field object (from gemfield_intake_schema_v2.json) —
-// nothing is hardcoded here (Rule 1 / the grep gate).
+// nothing is hardcoded here.
 
 import type { AnswerValue, IntakeField } from "@/lib/intake/types";
 

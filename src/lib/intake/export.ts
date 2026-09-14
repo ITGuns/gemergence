@@ -2,7 +2,7 @@
 // Canonical build-team artifact: all answered fields in schema order, then a
 // DERIVED section (refinable defaults expanded from the style/asset shortcuts,
 // never client gospel) and a FOLLOW-UP POOL section (depth fields deliberately
-// not asked, tier-filtered). Consumed by GEMFIELD_BUILD_PROCESS.md Phase 0.
+// not asked, tier-filtered). Consumed by the build kickoff (Phase 0).
 
 import type { Submission } from "./types";
 import {

@@ -214,7 +214,7 @@ export async function logEvent(id: string, type: string, actor: string, note?: s
 
 /**
  * Client-token answer upsert. Tier, status, and identity fields are not
- * writable here by construction (Rule 2) — the function only touches
+ * writable here by construction — the function only touches
  * `answers` and rolls the status forward to in_progress.
  */
 export async function saveAnswers(
@@ -274,7 +274,7 @@ export async function setStatus(id: string, status: SubmissionStatus, actor: str
   });
 }
 
-/** Panel-only tier change, always audit-logged (Rule 2). */
+/** Panel-only tier change, always audit-logged. */
 export async function changeTier(
   id: string,
   tier: number,

@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Tier is resolved server-side from the plan slug — never a free number
-  // from the client (Rule 2). Panel reps may also sell Tier 5 (custom).
+  // from the client. Panel reps may also sell Tier 5 (custom).
   const planSlug = str(body.plan, 40).toLowerCase();
   const plan = PLAN_TIERS[planSlug];
   const tier = plan ? plan.tier : null;

@@ -2,7 +2,7 @@
 
 // Gemfield Web Intake v2 — the 2-minute wizard.
 // Screens: 1 basics → 2 the tap core → 3 style & assets → 4 niche → 5 review.
-// Tier is a locked badge from the entry path, never a question (Rule 2).
+// Tier is a locked badge from the entry path, never a question.
 // Autosave on every answer (localStorage immediately, server debounced once a
 // submission exists); magic-link resume via ?s=<id>&t=<token>.
 

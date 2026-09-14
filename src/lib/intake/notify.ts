@@ -1,8 +1,8 @@
 // Gemfield Web Intake v2 — notifications.
 // Client-facing email goes out via Gmail SMTP (GMAIL_USER + GMAIL_APP_PASSWORD
 // — no domain verification needed, delivers to any address, ~500/day). On any
-// failure the composed message lands in data/intake/outbox/ so content is
-// inspectable and nothing is ever lost.
+// failure the composed message is logged as an "[intake outbox]" entry in the
+// platform logs (see writeOutbox) so content is inspectable and nothing is lost.
 // Ops notification rides the existing FormSubmit endpoint (same plumbing as
 // the audit form) so the team inbox needs zero new accounts.
 

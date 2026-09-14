@@ -1,5 +1,5 @@
 // POST /api/intake/submissions/:id/send — panel action: email the magic
-// intake link to the client (Resend), signed by the rep. Marks the
+// intake link to the client (Gmail SMTP), signed by the rep. Marks the
 // submission `sent` while it's still pre-open, and audit-logs either way.
 
 import { NextRequest, NextResponse } from "next/server";

@@ -1,7 +1,7 @@
 # Gemfield Web Intake v2 — admin guide
 
-Post-purchase 2-minute intake per `GEMFIELD_INTAKE_INTEGRATION.md`. The schema
-file **`gemfield_intake_schema_v2.json` (repo root) is the single source of
+Post-purchase 2-minute intake. The schema file
+**`gemfield_intake_schema_v2.json` (repo root) is the single source of
 truth** — question text, options, conditional rules, derivations, and the
 follow-up pool all live there. Components render whatever the schema engine
 returns; no question text exists in component code.
@@ -12,16 +12,20 @@ returns; no question text exists in component code.
 |---|---|
 | `/intake?plan=<slug>` | Self-signup entry. `plan` slug (foundation/growth/scale/strategic) locks the tier. Point each Square payment link's redirect here. |
 | `/intake?s=<id>&t=<token>` | Magic resume link (Path B / abandonment recovery). Prefilled contact, locked tier, server-side autosave. |
-| `/panel` | Sales panel: create a submission with the tier sold, optional niche preselect, rep notes; copy the link; track status; download exports. |
+| `/panel` | Sales panel: create a submission with the tier sold, optional niche preselect, rep notes; copy or email the magic link; track status; download exports. |
+| `POST /api/intake/submissions/:id/send` | Panel action behind "Email link": sends the magic link to the client via Gmail SMTP, signed by the rep. Auth: `x-panel-key`. |
 | `GET /api/intake/submissions/:gfId/export` | Canonical MD export (`GF-2026-0147_intake.md`) with DERIVED + FOLLOW-UP sections. Auth: `x-panel-key` header or `Authorization: Bearer $INTAKE_SERVICE_TOKEN`. Accepts UUID or GF-ID. |
 
 ## Env vars
 
 | Var | Purpose | Unset behavior |
 |---|---|---|
-| `INTAKE_PANEL_KEY` | Staff key for `/panel` + list/create APIs | dev: `dev-panel` fallback · prod: panel disabled |
+| `DATABASE_URL` | Postgres connection string for `store.ts`. On serverless, use Supabase's transaction pooler (port 6543), not the direct connection. | **Required.** The store throws on first use, so every intake route fails. |
+| `PG_POOL_MAX` | Per-instance `pg` pool size | defaults to 3 |
+| `INTAKE_PANEL_KEY` | Staff key for `/panel` + list/create/send APIs | dev: `dev-panel` fallback · prod: panel disabled |
 | `INTAKE_SERVICE_TOKEN` | Automation token for the export API | export accepts panel key only |
-| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | Email sender (Gmail SMTP via app password — no domain verification, delivers to any address, ~500/day) | composed emails written to `data/intake/outbox/` instead |
+| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | Email sender (Gmail SMTP via app password — no domain verification, delivers to any address, ~500/day) | nothing is sent; the composed message goes to the platform logs (see "Email & notifications") and the failure is written to the event log |
+| `DESKII_API_URL` + `GEMFIELD_WEBHOOK_SECRET` | Deskii portal provisioning on submit: HMAC-SHA256-signed POST to `<DESKII_API_URL>/api/gemfield/intake` | no portal is created; the confirmation goes out without the portal block and `portal_provision_failed` lands in the event log |
 
 Every send's outcome (including any provider error) is written to the
 submission's event log.
@@ -35,10 +39,14 @@ anyone, then composes the confirmation around it. A separate Deskii-branded
 credentials mail to a client who has only ever dealt with Gemfield reads as
 phishing — hence one message, from one sender, under one brand.
 
+Provisioning is capped at 6 seconds. A sleeping Deskii host can never hold the
+request long enough for the platform to kill the function, which would make an
+intake that was already saved look failed to the client.
+
 If Deskii is down or unconfigured, the confirmation still goes out with no
 portal block and `portal_provision_failed` lands in the event log — the signal
 that staff must create the org and invite the client by hand. The confirmation
-never reaches the outbox with a live setup token in it; that body is withheld.
+never reaches the logs with a live setup token in it; that body is withheld.
 
 ## Adding or editing a niche — schema only, no code
 
@@ -69,28 +77,60 @@ API drops anything else.
   `P-*` prefixes), conditional (`when H-203=Yes`).
 - Spam: honeypot + per-IP rate limit on public create, absorbed silently.
 
-## Storage & cutover points
+## Storage
 
-`store.ts` is the entire persistence contract — a file-based implementation
-under `data/intake/` (gitignored). Production cutovers, each isolated:
+`store.ts` is the entire persistence contract, and it is Postgres. One row per
+submission in `"IntakeSubmission"` (id, GF-ID, status, timestamps, and the full
+object in a `data` jsonb column), plus `"IntakeCounter"` for the atomic yearly
+GF-ID sequence. Tables are created lazily on first use (`CREATE TABLE IF NOT
+EXISTS`, once per warm instance), so there is no migration step.
 
-- **Postgres**: reimplement `store.ts` only (submissions/answers/events tables).
-  Routes and UI don't touch the filesystem.
-- **Resend**: swap the outbox write in `notify.ts` (`sendClientConfirmation`).
-- **Twilio SMS**: add a send action in the panel next to "Copy link".
-- **Stripe/Square webhook**: today the tier comes from the checkout redirect's
-  `plan` param; a checkout webhook that calls the panel-create API with the
-  session's plan makes it fully payment-verified.
+Each instance holds one small `pg` Pool (`PG_POOL_MAX`, default 3). On
+serverless many instances connect at once, so point `DATABASE_URL` at Supabase's
+transaction pooler rather than the direct connection. Routes and UI never touch
+the database directly; swapping stores again means reimplementing only this
+module. Nothing is written to the filesystem — the `data/intake/` directory from
+the file-based era no longer exists.
 
-Ops notification currently rides the existing FormSubmit endpoint
-(`SITE.formEndpoint`), falling back to `data/intake/outbox/` on failure.
+## Email & notifications
+
+Single provider: Gmail SMTP via `nodemailer` (`notify.ts`). Gmail forces the
+authenticated account as the envelope sender, so mail goes out as
+`"Gemfield Consulting" <GMAIL_USER>` with reply-to set to `SITE.email`. Three
+messages exist:
+
+- the client confirmation on submit (`sendClientConfirmation`);
+- the panel's "Email link" action (`sendIntakeLink`, via the `/send` route);
+- the Free Growth Audit confirmation (`sendAuditConfirmation`, used by
+  `/api/audit/confirm`; there is no submission record for an audit).
+
+The "outbox" is not a directory. Serverless filesystems are read-only, so on a
+failed send the composed message is logged with an `[intake outbox]` prefix to
+the platform logs (Vercel → project → Logs), and the failure is written to the
+submission's event log (`confirmation_email_failed`, `link_email_failed`). The
+one exception is a confirmation carrying a live Deskii setup link: its body is
+withheld from the logs, and staff re-issue the invite from Deskii instead.
+
+Ops notification rides the existing FormSubmit endpoint (`SITE.formEndpoint`),
+the same plumbing as the audit form. On failure the answer summary goes to the
+platform logs the same way.
+
+## Still pending
+
+- **SMS**: the panel emails the link; there is no text-message send. Adding one
+  (Twilio) is a new action next to "Email link".
+- **Payment-verified tier**: today the tier comes from the checkout redirect's
+  `plan` param. A Square checkout webhook that calls the panel-create API with
+  the session's plan would make it fully payment-verified. No Square links are
+  live yet — `CHECKOUT` in `constants.ts` is all `null`, so every tier still
+  routes to the quote flow.
 
 ## Build-process handshake
 
-The MD export is the input contract for `GEMFIELD_BUILD_PROCESS.md` Phase 0:
-all answered fields in schema order, tier + source + rep notes in the header,
-DERIVED section (never client gospel), FOLLOW-UP POOL section (what was
-deliberately not asked). Pull it headlessly:
+The MD export is the input contract for the build kickoff (Phase 0 of the
+build process): all answered fields in schema order, tier + source + rep notes
+in the header, DERIVED section (never client gospel), FOLLOW-UP POOL section
+(what was deliberately not asked). Pull it headlessly:
 
 ```
 curl -H "Authorization: Bearer $INTAKE_SERVICE_TOKEN" \

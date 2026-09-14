@@ -56,7 +56,7 @@ export type Submission = {
   contactEmail: string;
   contactPhone: string;
   /**
-   * Tier is metadata, never a question (Rule 2). Set from the purchase path
+   * Tier is metadata, never a question. Set from the purchase path
    * (checkout redirect / sales panel) at creation, immutable from any
    * client-token route by construction. null = purchase pending verification.
    */

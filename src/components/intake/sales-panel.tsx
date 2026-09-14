@@ -1,10 +1,10 @@
 "use client";
 
-// Sales control panel: create a submission with
-// the sold tier, copy the magic link to send, track status, pull exports.
+// Sales control panel: create a submission with the sold tier, copy or email
+// the magic link, track status, pull exports.
 // Auth: staff key + rep name, held in sessionStorage, sent as headers on every
-// call. Email/SMS sending is a cutover item (Resend/Twilio) — until then the
-// rep copies the link into their own email or text thread.
+// call. "Email link" sends via Gmail SMTP (see notify.ts); there is no SMS
+// send yet — for a text, the rep copies the link into their own thread.
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight } from "@/components/icons";

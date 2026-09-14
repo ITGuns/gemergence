@@ -1,7 +1,7 @@
 // Client-token routes for one submission (magic-link resume + autosave).
 // GET   ?t=<resumeToken> → sanitized view (no rep notes, no event log)
 // PATCH ?t=<resumeToken> { answers } → upsert answers only. Tier/status/
-//        identity are unreachable from here by construction (Rule 2).
+//        identity are unreachable from here by construction.
 
 import { NextRequest, NextResponse } from "next/server";
 import {
