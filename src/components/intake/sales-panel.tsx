@@ -1,6 +1,6 @@
 "use client";
 
-// Sales control panel (integration spec §2, Path B): create a submission with
+// Sales control panel: create a submission with
 // the sold tier, copy the magic link to send, track status, pull exports.
 // Auth: staff key + rep name, held in sessionStorage, sent as headers on every
 // call. Email/SMS sending is a cutover item (Resend/Twilio) — until then the

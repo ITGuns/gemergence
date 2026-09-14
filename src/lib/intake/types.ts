@@ -1,7 +1,7 @@
 // Gemfield Web Intake v2 — shared types.
 // The schema file (gemfield_intake_schema_v2.json, repo root) is the single
-// source of truth for questions and conditional rules (Rule 1 of the
-// integration spec). Nothing here duplicates question text.
+// source of truth for questions and conditional rules. Nothing here
+// duplicates question text.
 
 export type FieldType = "text" | "choice" | "multichoice";
 
@@ -95,7 +95,7 @@ export type ClientSubmissionView = {
   answers: Answers;
 };
 
-/** Site plan name → SOP tier number. Tier 5 (custom) is panel-only. */
+/** Site plan name → tier number. Tier 5 (custom) is panel-only. */
 export const PLAN_TIERS: Record<string, { tier: number; label: string }> = {
   foundation: { tier: 1, label: "Foundation" },
   growth: { tier: 2, label: "Growth" },

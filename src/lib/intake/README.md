@@ -74,8 +74,8 @@ API drops anything else.
 `store.ts` is the entire persistence contract — a file-based implementation
 under `data/intake/` (gitignored). Production cutovers, each isolated:
 
-- **Postgres**: reimplement `store.ts` only (submissions/answers/events tables
-  per the integration spec §4). Routes and UI don't touch the filesystem.
+- **Postgres**: reimplement `store.ts` only (submissions/answers/events tables).
+  Routes and UI don't touch the filesystem.
 - **Resend**: swap the outbox write in `notify.ts` (`sendClientConfirmation`).
 - **Twilio SMS**: add a send action in the panel next to "Copy link".
 - **Stripe/Square webhook**: today the tier comes from the checkout redirect's

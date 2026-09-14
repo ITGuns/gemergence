@@ -1,4 +1,4 @@
-// Gemfield Web Intake v2 — Markdown export (§5 of the integration spec).
+// Gemfield Web Intake v2 — Markdown export.
 // Canonical build-team artifact: all answered fields in schema order, then a
 // DERIVED section (refinable defaults expanded from the style/asset shortcuts,
 // never client gospel) and a FOLLOW-UP POOL section (depth fields deliberately

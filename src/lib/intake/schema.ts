@@ -160,7 +160,7 @@ export function validateSubmission(
 }
 
 /**
- * Derivation contract (§5): compact answers (D-720 style card, D-722 assets)
+ * Derivation contract: compact answers (D-720 style card, D-722 assets)
  * expand into the legacy design fields the Build Process references —
  * labeled DERIVED downstream, refinable defaults, never client gospel.
  */
@@ -176,7 +176,7 @@ export function deriveFields(answers: Answers): Record<string, string> {
 }
 
 /**
- * Follow-up pool (§6), tier-filtered: "(Tier N+)" entries drop below tier N;
+ * Follow-up pool, tier-filtered: "(Tier N+)" entries drop below tier N;
  * niche-prefixed entries (H-*, P-*) apply only to that niche; the H-203
  * follow-up applies only when the client answered Yes.
  */

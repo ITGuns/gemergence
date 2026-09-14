@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Public path — honeypot + rate limit, spam absorbed silently (spec §8).
+  // Public path — honeypot + rate limit, spam absorbed silently.
   if (str(body.website_url) !== "") {
     return NextResponse.json({ id: "ok", gfId: "GF-0000-0000", resumeToken: "ok" });
   }
