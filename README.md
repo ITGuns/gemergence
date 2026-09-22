@@ -64,7 +64,7 @@ version switcher. `/restaurants`, `/audit` and `/marketing` 301 to `/pricing`
 6. `/` closing CTA links "See a site we built" at `/` until a real restaurant
    case study exists.
 
-## The Front Door offer (live now → 31 October 2026)
+## The October 2026 Front Door offer
 
 Sign Front Door by 31 October 2026 and the integrated menu and booking control
 panel — menu control plus advanced booking — is included at no extra cost, for
@@ -73,15 +73,14 @@ as long as the client stays on the plan. Normally a Foundation ($497) feature.
 Say **"included at no extra cost"**, never "free". The client still pays $197 a
 month, and "free" invites the question of what they are paying for.
 
-**The window opened early**, on 21 September rather than 1 October, so all the
-copy is deadline-led ("by 31 October", "Ends 31 October", "Until 31 October
-2026") rather than month-led. Nothing on the site tells a September prospect to
-wait for October — if you edit this copy, keep it that way.
+Copy is verbatim from `Gemfield-October-Front-Door-Promo.md`, which supersedes
+the October section of `Gemfield-Restaurant-Page-SPEC.md` — one integrated
+panel, not two separate features.
 
 **Dates are evaluated in `America/Los_Angeles`, not the server's or the
 operator's timezone.** That is what keeps the offer alive until midnight PT on
 the 31st instead of killing it at 5pm mid-service. It also means the site's
-"today" runs behind a European or Asian desk by up to a day — set `firstDay`
+"today" runs behind a European or Asian desk by up to a day — set the window
 against the Pacific date, not your own.
 
 Everything on the site reads one date gate (`RESTAURANT_PROMO` +
