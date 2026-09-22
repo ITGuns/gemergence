@@ -25,7 +25,7 @@ export default function TermsPage() {
             <h2>The basics</h2>
             <p className="mt-3">
               This website is operated by Gemfield Consulting (&ldquo;Gemfield&rdquo;). Using the
-              site, requesting an audit, or booking a call doesn&apos;t create a client
+              site or booking a call doesn&apos;t create a client
               relationship — that begins when both sides sign a services agreement. These terms
               cover the site itself and summarize, in plain English, how our engagements work. If
               anything here conflicts with a signed agreement, the signed agreement wins.
@@ -43,20 +43,22 @@ export default function TermsPage() {
             <h2>Ownership</h2>
             <p className="mt-3">
               Your domain, your content, your customer data, and your business accounts (Google,
-              analytics, advertising) are yours from day one — registered and held in your name. For
-              websites we build as part of a monthly plan, the build itself becomes fully yours
-              after six months on any plan, or you may buy it out at any time before that at a
-              published price. Standalone (Website-Only) builds are yours outright on final payment.
-              When an engagement ends, we hand over access and provide a complete export of your
-              data.
+              analytics, payment processing) are yours from day one — registered and held in your
+              name. Your menu, your photos, and your guest and booking data are yours in full. The
+              build itself becomes fully yours after six paid months on any plan, or you may buy it
+              out at any time before that at a published price. When an engagement ends, we hand
+              over access and provide a complete export of your data.
             </p>
           </div>
           <div>
-            <h2>Marketing services</h2>
+            <h2>Online ordering, payments, and your POS</h2>
             <p className="mt-3">
-              Marketing management (Growth Fuel) is billed as a flat monthly fee. Advertising budgets
-              are paid by you directly to the advertising platforms, in accounts you own. We never
-              take a percentage of your ad spend.
+              Where a plan includes online ordering, orders are taken through your own payment
+              account. Card processing fees are set by your processor and paid by you directly — we
+              never take a percentage of an order. POS connection depends on what your system
+              allows; we check yours before you commit and tell you plainly whether it can connect,
+              can connect with a delay, or cannot. Where a plan includes a POS we build, it is
+              covered by the same ownership terms above.
             </p>
           </div>
           <div>

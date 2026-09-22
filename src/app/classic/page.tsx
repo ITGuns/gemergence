@@ -3,7 +3,6 @@ import {
   Hero,
   Problem,
   System,
-  Fuel,
   Deskii,
   Offer,
   Ownership,
@@ -30,7 +29,6 @@ export default function ClassicHome() {
       <Hero />
       <Problem />
       <System />
-      <Fuel />
       <Deskii />
       <Offer />
       <Ownership />

@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { BookCall } from "@/components/book-call";
 import { Reveal } from "@/components/reveal";
 import { ArrowRight } from "@/components/icons";
 import { DeskiiDashboard, DeskiiCrop } from "@/components/deskii-frame";
-import { HERO, PROBLEM, SYSTEM, FUEL, DESKII, OFFER, OWNERSHIP } from "@/lib/content";
+import { HERO, PROBLEM, SYSTEM, DESKII, OFFER, OWNERSHIP } from "@/lib/content";
 
 /* S1 — Hero */
 export function Hero() {
@@ -23,10 +24,7 @@ export function Hero() {
           </Reveal>
           <Reveal delay={210}>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/audit" className="btn btn-primary !px-6 !py-4 text-[1rem]">
-                {HERO.primaryCta}
-                <ArrowRight size={16} />
-              </Link>
+              <BookCall className="btn btn-primary !px-6 !py-4 text-[1rem]" label={HERO.primaryCta} size={16} />
               <Link href="/how-it-works" className="link-arrow text-[0.98rem]">
                 {HERO.secondaryCta}
                 <ArrowRight size={15} />
@@ -113,47 +111,12 @@ export function System() {
   );
 }
 
-/* S4 — Growth Fuel (marketing layer) */
-export function Fuel() {
-  return (
-    <section className="bg-surface">
-      <div className="container-g section-pad">
-        <div className="grid gap-12 lg:grid-cols-12">
-          <Reveal className="lg:col-span-5">
-            <p className="eyebrow">{FUEL.eyebrow}</p>
-            <h2 className="font-display h2 mt-4">{FUEL.h}</h2>
-            <p className="measure mt-6 leading-relaxed text-ink2">{FUEL.body}</p>
-            <div className="mt-8 space-y-3 border-l-2 border-emerald pl-5 text-[0.95rem]">
-              <p className="font-semibold">{FUEL.eligibility}</p>
-              <p className="text-ink2">{FUEL.feeLine}</p>
-            </div>
-            <Link href="/marketing" className="link-arrow mt-8 text-[0.98rem]">
-              {FUEL.cta}
-              <ArrowRight size={15} />
-            </Link>
-          </Reveal>
-          <Reveal className="lg:col-span-6 lg:col-start-7" delay={120}>
-            <div className="grid gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-2">
-              {FUEL.channels.map((c) => (
-                <div key={c.name} className="bg-paper p-5">
-                  <h3 className="text-[1rem] font-bold">{c.name}</h3>
-                  <p className="mt-1.5 text-[0.9rem] leading-relaxed text-ink2">{c.copy}</p>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* S5 — Deskii (the dark band) */
 export function Deskii() {
   const spans = ["sm:col-span-3", "sm:col-span-3", "sm:col-span-2", "sm:col-span-2", "sm:col-span-2"];
-  const order = ["Reports", "Approvals", "Projects", "Tasks", "Roadmap"];
+  const order = ["Menu", "Bookings", "Table plan", "Reviews", "Reports"];
   const features = order.map((name) => DESKII.features.find((f) => f.name === name)!);
-  const messages = DESKII.features.find((f) => f.name === "Messages")!;
+  const messages = DESKII.features.find((f) => f.name === "Conversations")!;
 
   return (
     <section className="band blueprint">
@@ -187,7 +150,7 @@ export function Deskii() {
                 </Link>
               </div>
               <div className="max-w-sm md:justify-self-end md:w-full">
-                <DeskiiCrop kind="Messages" />
+                <DeskiiCrop kind="Conversations" />
               </div>
             </div>
           </Reveal>
@@ -211,10 +174,7 @@ export function Offer() {
           <div className="rounded-xl border border-emerald/25 bg-tint p-7">
             <p className="eyebrow">Selective, on purpose</p>
             <p className="mt-3 text-[1.05rem] font-medium leading-relaxed">{OFFER.qualification}</p>
-            <Link href="/audit" className="btn btn-primary mt-6">
-              {OFFER.cta}
-              <ArrowRight size={15} />
-            </Link>
+            <BookCall className="btn btn-primary mt-6" label={OFFER.cta} />
           </div>
         </Reveal>
       </div>

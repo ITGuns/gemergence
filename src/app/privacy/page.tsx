@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           <div>
             <h2>What we collect</h2>
             <p className="mt-3">
-              When you request an audit or contact us, we collect what you give us: your name,
+              When you book a call or contact us, we collect what you give us: your name,
               business name, email, phone, website address, industry, and anything you write in the
               form. We also use standard analytics tools that collect usage data (pages visited,
               device type, approximate location) to understand how the site is used.
@@ -28,9 +28,9 @@ export default function PrivacyPage() {
           <div>
             <h2>How we use it</h2>
             <p className="mt-3">
-              We use your information to prepare your audit, respond to your request, schedule and
+              We use your information to review your site and listings before the call, respond to your request, schedule and
               run calls, and — if you become a client — deliver services. If you opt in, we may send
-              you relevant follow-up emails about your audit and our services. Every email includes
+              you relevant follow-up emails about your enquiry and our services. Every email includes
               an unsubscribe link, and unsubscribing is honored immediately.
             </p>
           </div>

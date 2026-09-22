@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Gemfield Consulting — Your website should be a growth system, not a brochure.";
+export const alt = "Gemfield Consulting — Your website should fill tables, not just exist.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -56,7 +56,7 @@ export default function OgImage() {
             maxWidth: 1000,
           }}
         >
-          Your website should be a growth system, not a brochure.
+          Your website should fill tables, not just exist.
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -68,7 +68,7 @@ export default function OgImage() {
               fontFamily: "Arial, sans-serif",
             }}
           >
-            Websites · Visibility · Lead capture · Follow-up · Deskii
+            Websites · Menu control · Bookings · Ordering · Deskii
           </div>
           <div
             style={{
@@ -82,7 +82,7 @@ export default function OgImage() {
               fontFamily: "Arial, sans-serif",
             }}
           >
-            Get a Free Growth Audit
+            Book a call
           </div>
         </div>
       </div>

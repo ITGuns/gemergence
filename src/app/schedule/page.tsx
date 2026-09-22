@@ -3,9 +3,9 @@ import { CalendlyEmbed } from "@/components/calendly";
 import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
-  title: "Book your audit call",
+  title: "Book your call",
   description:
-    "Your audit request is in. Pick a time and we'll walk you through the findings and your 90-day roadmap.",
+    "Pick a time. We review your site, your menu and your listings before we meet, and you get a straight answer on your POS.",
   robots: { index: false },
 };
 
@@ -15,13 +15,14 @@ export default function SchedulePage() {
       <div className="container-g grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <Reveal>
-            <p className="eyebrow">Request received</p>
+            <p className="eyebrow">Book a call</p>
             <h1 className="font-display h1 mt-5 !text-[clamp(2.2rem,4.4vw,3.4rem)]">
               One more step: pick your time.
             </h1>
             <p className="measure mt-6 text-[1.05rem] leading-relaxed text-ink2">
-              Thanks — we received your request and will review your website before the call. Choose
-              a time below and the calendar invite comes straight to your inbox.
+              Pick a time below and the calendar invite comes straight to your inbox. We look at
+              your site, your menu and your listings before we meet, so the call is spent on
+              findings rather than discovery.
             </p>
           </Reveal>
           <Reveal delay={120}>
@@ -31,12 +32,12 @@ export default function SchedulePage() {
                 {
                   n: "2",
                   t: "We do the homework",
-                  c: "Your site, visibility, capture, and follow-up — reviewed before we meet.",
+                  c: "Your menu, your hours across Google and Maps, and your booking path — reviewed before we meet.",
                 },
                 {
                   n: "3",
-                  t: "You get the roadmap",
-                  c: "Findings and priorities, yours to keep — whether or not we work together.",
+                  t: "You get a straight answer",
+                  c: "Which tier fits, and whether your POS can connect — yes, yes with a delay, or no.",
                 },
               ].map((s) => (
                 <li key={s.n} className="flex gap-4">

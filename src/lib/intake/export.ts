@@ -24,11 +24,7 @@ function fmt(value: string | string[] | undefined): string {
 
 export function buildMarkdownExport(sub: Submission): string {
   const lines: string[] = [];
-  const nicheDisplay = sub.niche
-    ? sub.niche === "personal_injury" || sub.niche === "hvac"
-      ? nicheLabel(sub.niche)
-      : `home_services / ${sub.niche}`
-    : "other_general";
+  const nicheDisplay = sub.niche ? nicheLabel(sub.niche) : "other_general";
 
   lines.push(`# Gemfield Intake Export — ${sub.gfId}`);
   lines.push(

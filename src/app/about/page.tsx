@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BookCall } from "@/components/book-call";
 import { Reveal } from "@/components/reveal";
-import { ArrowRight } from "@/components/icons";
 import { ABOUT_PAGE, OWNERSHIP, WHY } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Gemfield Consulting — operators who build and manage digital growth systems for service businesses. Based in San Francisco, serving the United States.",
+    "Gemfield Consulting — operators who build and run the websites, booking systems and ordering that restaurants, bars and taphouses need to fill tables. Based in San Francisco, serving the United States.",
 };
 
 export default function AboutPage() {
@@ -67,10 +66,7 @@ export default function AboutPage() {
             <p className="eyebrow">{OWNERSHIP.eyebrow}</p>
             <h2 className="font-display h2 mt-4">{OWNERSHIP.h}</h2>
             <p className="mt-6 text-[1.02rem] font-medium text-emerald-deep">{OWNERSHIP.kicker}</p>
-            <Link href="/audit" className="btn btn-primary mt-8">
-              Get a Free Growth Audit
-              <ArrowRight size={15} />
-            </Link>
+            <BookCall className="btn btn-primary mt-8" />
           </Reveal>
           <Reveal className="lg:col-span-6 lg:col-start-7" delay={120}>
             <dl>

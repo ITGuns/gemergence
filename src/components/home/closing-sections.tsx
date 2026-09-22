@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { FrontDoorPromoBadge, FrontDoorPromoLine } from "@/components/october-promo";
+import { BookCall } from "@/components/book-call";
 import { Reveal } from "@/components/reveal";
 import { ArrowRight, Check } from "@/components/icons";
 import { BeforeAfter } from "@/components/deskii-frame";
-import { AuditForm } from "@/components/audit-form";
-import { INDUSTRIES, PROCESS, PROOF, PLANS, WHY, FINAL_CTA } from "@/lib/content";
+import { INDUSTRIES, PROCESS, PROOF, PLANS, WHY, FINAL_CTA, RESTAURANTS_PAGE } from "@/lib/content";
 
 /* S8 — Who We Help */
 export function Industries() {
@@ -21,19 +22,15 @@ export function Industries() {
               <div className="hairline-card flex h-full flex-col p-6">
                 <h3 className="font-display text-[1.3rem]">{c.name}</h3>
                 <p className="mt-2.5 flex-1 text-[0.95rem] leading-relaxed text-ink2">{c.copy}</p>
-                <Link href="/audit" className="link-arrow mt-5 text-[0.92rem]">
-                  Get your audit
-                  <ArrowRight size={14} />
-                </Link>
+                <BookCall className="link-arrow mt-5 text-[0.92rem]" size={14} />
               </div>
             </Reveal>
           ))}
           <Reveal delay={280}>
             <div className="flex h-full flex-col justify-center rounded-xl border border-dashed border-ink2/40 p-6">
-              <p className="font-display text-[1.3rem]">Another service business?</p>
+              <p className="font-display text-[1.3rem]">Another kind of room?</p>
               <p className="mt-2.5 text-[0.95rem] leading-relaxed text-ink2">
-                If your business grows when the phone rings, forms come in, and calendars fill up —
-                the system fits. Tell us what you do in the audit.
+                If you serve food or drink to people in a room you run, the system fits. Tell us what you run on the call.
               </p>
             </div>
           </Reveal>
@@ -203,6 +200,7 @@ export function Plans() {
                       Most chosen
                     </span>
                   )}
+                  {t.name === RESTAURANTS_PAGE.table.recommendedDuringPromo && <FrontDoorPromoBadge />}
                 </div>
                 <p className="mt-4">
                   {t.price.startsWith("From ") ? (
@@ -217,6 +215,7 @@ export function Plans() {
                   )}
                   <span className="text-[0.9rem] text-ink2">{t.period}</span>
                 </p>
+                {t.name === RESTAURANTS_PAGE.table.recommendedDuringPromo && <FrontDoorPromoLine />}
                 <p className="mt-2 text-[0.88rem] font-medium text-ink2">{t.bestFor}</p>
                 <ul className="mt-5 flex-1 space-y-2.5 border-t border-hairline pt-5">
                   {t.highlights.map((h) => (
@@ -242,10 +241,10 @@ export function Plans() {
         <Reveal className="mt-6" delay={120}>
           <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-hairline bg-white p-6 sm:flex-row sm:items-center">
             <div>
-              <h3 className="text-[1.05rem] font-bold">{PLANS.websiteOnly.name}</h3>
-              <p className="measure mt-1 text-[0.92rem] text-ink2">{PLANS.websiteOnly.copy}</p>
+              <h3 className="text-[1.05rem] font-bold">{PLANS.strategicNote.name}</h3>
+              <p className="measure mt-1 text-[0.92rem] text-ink2">{PLANS.strategicNote.copy}</p>
             </div>
-            <p className="mono-num shrink-0 text-[1.2rem] font-semibold">{PLANS.websiteOnly.price}</p>
+            <p className="mono-num shrink-0 text-[1.2rem] font-semibold">{PLANS.strategicNote.price}</p>
           </div>
         </Reveal>
       </div>
@@ -300,8 +299,8 @@ export function FinalCta() {
           <p className="measure mt-6 text-[1.05rem] leading-relaxed text-ink2">{FINAL_CTA.body}</p>
           <p className="mono-num mt-4 text-[0.85rem] text-ink2">{FINAL_CTA.micro}</p>
         </Reveal>
-        <Reveal className="lg:col-span-6 lg:col-start-7" delay={120}>
-          <AuditForm id="audit-form" />
+        <Reveal className="self-center lg:col-span-6 lg:col-start-7" delay={120}>
+          <BookCall className="btn btn-primary !px-8 !py-4 text-[1.02rem]" size={16} />
         </Reveal>
       </div>
     </section>

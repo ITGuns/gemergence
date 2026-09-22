@@ -51,10 +51,13 @@ never reaches the logs with a live setup token in it; that body is withheld.
 ## Adding or editing a niche — schema only, no code
 
 1. Add a block under `niche` in `gemfield_intake_schema_v2.json`:
-   `"solar": { "label": "Solar", "group": "home_services", "fields": [...] }`
-2. If it's a home-service trade, add its label to
-   `nicheSelector.homeServicesSelector.options` (label must match exactly);
-   a top-level niche goes in `nicheSelector.options` instead.
+   `"wine_bar": { "label": "Wine Bar", "group": null, "fields": [...] }`
+2. Add its label to `nicheSelector.options` (label must match exactly). The
+   taxonomy is flat for restaurants — `nicheSelector.subSelectorParent` is
+   null, so the N-002 sub-selector never renders. To reintroduce a grouped
+   level, set `subSelectorParent` to the N-001 option that should open it,
+   fill `nicheSelector.subSelector.options`, and give each child niche a
+   non-null `group`.
 3. Keep the budget: ≤ 6 fields per niche, majority tap-type (`choice`/`multichoice`).
 4. Redeploy. The wizard, panel preselect list, validation, and exports pick it
    up automatically.
@@ -96,13 +99,14 @@ the file-based era no longer exists.
 
 Single provider: Gmail SMTP via `nodemailer` (`notify.ts`). Gmail forces the
 authenticated account as the envelope sender, so mail goes out as
-`"Gemfield Consulting" <GMAIL_USER>` with reply-to set to `SITE.email`. Three
+`"Gemfield Consulting" <GMAIL_USER>` with reply-to set to `SITE.email`. Two
 messages exist:
 
 - the client confirmation on submit (`sendClientConfirmation`);
 - the panel's "Email link" action (`sendIntakeLink`, via the `/send` route);
-- the Free Growth Audit confirmation (`sendAuditConfirmation`, used by
-  `/api/audit/confirm`; there is no submission record for an audit).
+Both carry a submission record. The Free Growth Audit confirmation was removed
+with the offer in the 2026-09-22 restaurant swap; every CTA is a Calendly call
+now and Calendly sends its own confirmation.
 
 The "outbox" is not a directory. Serverless filesystems are read-only, so on a
 failed send the composed message is logged with an `[intake outbox]` prefix to

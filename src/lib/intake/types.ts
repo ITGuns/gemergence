@@ -24,7 +24,7 @@ export type IntakeField = {
 export type NicheDef = {
   key: string;
   label: string;
-  group: "home_services" | null;
+  group: string | null;
   fields: IntakeField[];
 };
 

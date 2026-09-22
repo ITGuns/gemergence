@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BookCall } from "@/components/book-call";
 import { Reveal } from "@/components/reveal";
-import { ArrowRight, Check } from "@/components/icons";
+import { Check } from "@/components/icons";
 import { HOW_PAGE } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "Audit → Strategy → Build → Launch → Improve. How Gemfield takes a service business from a website that exists to a growth system that creates clients.",
+    "Call → Plan → Build → Launch → Improve. How Gemfield takes a restaurant from a website that exists to one that fills tables — live in a week on the lower plans.",
 };
 
 export default function HowItWorksPage() {
@@ -70,10 +70,7 @@ export default function HowItWorksPage() {
                 </li>
               ))}
             </ul>
-            <Link href="/audit" className="btn btn-primary mt-8">
-              Start with the audit
-              <ArrowRight size={15} />
-            </Link>
+            <BookCall className="btn btn-primary mt-8" />
           </Reveal>
         </div>
       </section>

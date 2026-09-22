@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BookCall } from "@/components/book-call";
 import { Reveal } from "@/components/reveal";
-import { ArrowRight } from "@/components/icons";
 import { DeskiiDashboard, DeskiiCrop } from "@/components/deskii-frame";
 import { DESKII, DESKII_PAGE } from "@/lib/content";
 
@@ -79,10 +78,7 @@ export default function DeskiiPage() {
                 {DESKII_PAGE.closing}
               </p>
               <div className="lg:col-span-4 lg:justify-self-end">
-                <Link href="/audit" className="btn btn-primary">
-                  {DESKII_PAGE.cta}
-                  <ArrowRight size={15} />
-                </Link>
+                <BookCall className="btn btn-primary" label={DESKII_PAGE.cta} />
               </div>
             </div>
           </Reveal>

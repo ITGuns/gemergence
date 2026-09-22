@@ -1775,11 +1775,11 @@ function DeskiiApp() {
         <ScreenPanel w={5.3} h={3.6} px={1280} r={0.1} draw={drawDeskiiShell} glow={DK.cyan} glowOpacity={0.25} />
       </GemPart>
       {/* six module cards erupt from the gem into the dashboard grid */}
-      <DeskiiModule i={0} label="Projects" />
-      <DeskiiModule i={1} label="Tasks" />
-      <DeskiiModule i={2} label="Approvals" />
-      <DeskiiModule i={3} label="Reports" />
-      <DeskiiModule i={4} label="Roadmap" />
+      <DeskiiModule i={0} label="Menu" />
+      <DeskiiModule i={1} label="Bookings" />
+      <DeskiiModule i={2} label="Table plan" />
+      <DeskiiModule i={3} label="Reviews" />
+      <DeskiiModule i={4} label="Reports" />
       <DeskiiModule i={5} label="Messages">
         <group ref={typing} position={[-0.36, -0.38, 0.01]}>
           {[0, 1, 2].map((i) => (
@@ -1797,7 +1797,7 @@ function DeskiiApp() {
 /* ── Remaining section exhibits ─────────────────────────────────── */
 
 /** Problem — a site built to exist: dim, no action path, leads leaking out. */
-/** The generic template site every service business gets sold — drawn as a
+/** The generic template site every restaurant gets sold — drawn as a
  *  real page (deliberately bland grays/blues; Georgia/Arial on purpose) so it
  *  reads as "their world" against the dark emerald scene. */
 function drawBrochureSite(g: CanvasRenderingContext2D, W: number, H: number) {

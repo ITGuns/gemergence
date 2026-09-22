@@ -25,11 +25,11 @@ const jbmono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Gemfield Consulting — Growth systems for service businesses",
+    default: "Gemfield Consulting — Websites and booking systems for restaurants",
     template: "%s — Gemfield Consulting",
   },
   description:
-    "Your website should be a growth system, not a brochure. Gemfield builds and manages the digital infrastructure service businesses need to get found, capture leads, follow up faster, and turn attention into revenue.",
+    "Your website should fill tables, not just exist. Gemfield builds and runs the website, the menu you change from your phone, and the booking system that takes reservations while you are on the floor. For restaurants, bars and taphouses. Live in a week.",
   openGraph: {
     siteName: SITE.name,
     type: "website",
@@ -48,7 +48,7 @@ const jsonLd = {
   url: SITE.url,
   email: SITE.email,
   description:
-    "Gemfield Consulting builds and manages digital growth systems for service businesses: conversion-focused websites, local SEO and AI-search visibility (AEO/GEO), lead capture, follow-up automation, review systems, reporting through the Deskii client command center, and custom tools.",
+    "Gemfield Consulting builds and runs digital systems for restaurants, bars and taphouses: fast phone-first websites, a menu control panel the owner updates themselves, live booking with a table selector, missed-call text back, review engine, Google and Yelp listings, online ordering the restaurant keeps the margin on, POS connection, and reporting through the Deskii control panel.",
   address: {
     "@type": "PostalAddress",
     addressLocality: "San Francisco",
@@ -56,14 +56,16 @@ const jsonLd = {
     addressCountry: "US",
   },
   areaServed: { "@type": "Country", name: "United States" },
-  priceRange: "$497–$3,500+/month",
+  priceRange: "$197–$3,500+/month",
   knowsAbout: [
-    "Website design and development",
-    "Local SEO",
+    "Restaurant website design and development",
+    "Online table booking and reservation systems",
+    "Restaurant menu management",
+    "Local SEO for restaurants",
     "AI search optimization (AEO, GEO)",
-    "Lead capture and follow-up automation",
+    "Missed-call text back and guest follow-up",
     "Review and reputation systems",
-    "Google Ads and Local Services Ads",
+    "Online food ordering and POS integration",
     "Client reporting dashboards",
   ],
   sameAs: SITE.social.map((s) => s.href),

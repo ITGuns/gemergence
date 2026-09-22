@@ -1,11 +1,12 @@
-import Image from "next/image";
+import { BookCall } from "@/components/book-call";
+import { OctoberPromoBanner, FrontDoorPromoBadge, FrontDoorPromoLine } from "@/components/october-promo";
+import { DeskiiDashboard, RestaurantSiteFrame } from "@/components/deskii-frame";
 import Link from "next/link";
 import { ArrowRight, Check } from "@/components/icons";
-import { AuditForm } from "@/components/audit-form";
 import { Reveal } from "@/components/reveal";
 import {
-  HERO, PROBLEM, SYSTEM, FUEL, DESKII, OFFER, OWNERSHIP,
-  INDUSTRIES, PROCESS, PLANS, WHY, FINAL_CTA,
+  HERO, PROBLEM, SYSTEM, DESKII, OFFER, OWNERSHIP,
+  INDUSTRIES, PROCESS, PLANS, WHY, FINAL_CTA, RESTAURANTS_PAGE,
 } from "@/lib/content";
 
 /** Shared section header: eyebrow → display headline → measured body. */
@@ -33,10 +34,7 @@ export default function DaylightHome() {
             </h1>
             <p className="mt-6 max-w-xl text-[1.12rem] leading-relaxed text-ink2">{HERO.sub}</p>
             <div className="mt-8 flex flex-wrap items-center gap-5">
-              <Link href="/audit" className="btn btn-primary !px-7 !py-4 text-[1.02rem]">
-                {HERO.primaryCta}
-                <ArrowRight size={16} />
-              </Link>
+              <BookCall className="btn btn-primary !px-7 !py-4 text-[1.02rem]" label={HERO.primaryCta} size={16} />
               <Link href="/how-it-works" className="link-arrow text-[0.98rem]">
                 {HERO.secondaryCta}
                 <ArrowRight size={15} />
@@ -53,14 +51,9 @@ export default function DaylightHome() {
           </Reveal>
           <Reveal className="relative lg:col-span-6" delay={120}>
             <div className="absolute -right-4 -top-4 bottom-10 left-10 rounded-2xl bg-tint" aria-hidden="true" />
-            <Image
-              src="/exhibits/site-summit-offer.jpg"
-              alt="A Gemfield-built website for a home services client — clear headline, one call to action, reviews front and center"
-              width={1024}
-              height={702}
-              priority
-              className="relative rounded-xl border border-hairline shadow-[0_32px_64px_-24px_rgba(21,23,26,0.35)]"
-            />
+            <div className="relative">
+              <RestaurantSiteFrame />
+            </div>
             <p className="mono-num relative mt-4 text-[0.78rem] tracking-wide text-ink2">
               A GEMFIELD BUILD — THE WEBSITE IS INCLUDED IN EVERY PLAN
             </p>
@@ -111,35 +104,6 @@ export default function DaylightHome() {
         </div>
       </section>
 
-      {/* 4 — GROWTH FUEL */}
-      <section className="section-pad-sm">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <Reveal className="lg:col-span-4">
-            <p className="eyebrow">{FUEL.eyebrow}</p>
-            <h2 className="font-display h3 mt-3 !text-[1.7rem]">{FUEL.h}</h2>
-            <p className="mt-4 text-[0.95rem] leading-relaxed text-ink2">{FUEL.body}</p>
-            <Link href="/marketing" className="link-arrow mt-5 text-[0.95rem]">
-              {FUEL.cta}
-              <ArrowRight size={14} />
-            </Link>
-          </Reveal>
-          <Reveal className="self-center lg:col-span-7 lg:col-start-6" delay={100}>
-            <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-              {FUEL.channels.map((c) => (
-                <li key={c.name} className="border-t border-hairline pt-2.5">
-                  <span className="block text-[0.92rem] font-bold">{c.name}</span>
-                  <span className="text-[0.84rem] leading-snug text-ink2">{c.copy}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 border-l-2 border-emerald pl-4 text-[0.88rem] leading-relaxed">
-              <span className="font-semibold">{FUEL.eligibility}</span>{" "}
-              <span className="text-ink2">{FUEL.feeLine}</span>
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
       {/* 5 — DESKII (the one dark moment: the product on its home turf) */}
       <section className="band blueprint section-pad">
         <div className="container-g grid items-center gap-12 lg:grid-cols-12">
@@ -161,13 +125,7 @@ export default function DaylightHome() {
             </Link>
           </Reveal>
           <Reveal className="lg:col-span-7" delay={120}>
-            <Image
-              src="/exhibits/deskii-dashboard.png"
-              alt="The Deskii client command center — projects, approvals, reports, and messages in one workspace"
-              width={1440}
-              height={900}
-              className="rounded-xl border border-band-line shadow-[0_32px_64px_-24px_rgba(0,0,0,0.6)]"
-            />
+            <DeskiiDashboard />
             <p className="mono-num mt-4 text-[0.75rem] tracking-wide text-band-mut">
               DESKII — THE CLIENT COMMAND CENTER EVERY GEMFIELD ENGAGEMENT RUNS ON
             </p>
@@ -180,10 +138,7 @@ export default function DaylightHome() {
         <div className="container-g">
           <Header center eyebrow={OFFER.eyebrow} h={OFFER.h} body={OFFER.body} />
           <Reveal className="mt-8 text-center" delay={120}>
-            <Link href="/audit" className="btn btn-primary !px-7 !py-4 text-[1rem]">
-              {OFFER.cta}
-              <ArrowRight size={16} />
-            </Link>
+            <BookCall className="btn btn-primary !px-7 !py-4 text-[1rem]" label={OFFER.cta} size={16} />
           </Reveal>
         </div>
       </section>
@@ -205,10 +160,9 @@ export default function DaylightHome() {
                 </li>
               ))}
               <li className="border-t border-hairline pt-2.5">
-                <h3 className="font-display text-[1.08rem]">Another service business?</h3>
+                <h3 className="font-display text-[1.08rem]">Another kind of room?</h3>
                 <p className="mt-1 text-[0.84rem] leading-snug text-ink2">
-                  If your business grows when the phone rings, forms come in, and calendars fill up — the
-                  system fits. Tell us what you do in the audit.
+                  If you serve food or drink to people in a room you run, the system fits. Tell us what you run on the call.
                 </p>
               </li>
             </ul>
@@ -238,6 +192,10 @@ export default function DaylightHome() {
         </div>
       </section>
 
+      {/* The October offer, directly above the plans. Self-gating: renders
+          nothing once the window closes. */}
+      <OctoberPromoBanner />
+
       {/* 9 — PLANS */}
       <section className="section-pad">
         <div className="container-g">
@@ -256,6 +214,7 @@ export default function DaylightHome() {
                       Most chosen
                     </span>
                   )}
+                  {t.name === RESTAURANTS_PAGE.table.recommendedDuringPromo && <FrontDoorPromoBadge />}
                 </div>
                 <p className="mt-4">
                   {t.price.startsWith("From ") ? (
@@ -268,6 +227,7 @@ export default function DaylightHome() {
                   )}
                   <span className="text-[0.85rem] text-ink2">{t.period}</span>
                 </p>
+                {t.name === RESTAURANTS_PAGE.table.recommendedDuringPromo && <FrontDoorPromoLine />}
                 <p className="mt-2 min-h-[3.2em] text-[0.86rem] font-medium leading-snug text-ink2">{t.bestFor}</p>
                 <ul className="mt-4 space-y-2 border-t border-hairline pt-4">
                   {t.highlights.map((h) => (
@@ -283,10 +243,10 @@ export default function DaylightHome() {
           <Reveal className="mt-8 grid gap-x-12 gap-y-5 border-t border-hairline pt-6 lg:grid-cols-12" delay={200}>
             <div className="lg:col-span-5">
               <div className="flex flex-wrap items-baseline gap-x-4">
-                <h3 className="text-[0.95rem] font-bold">{PLANS.websiteOnly.name}</h3>
-                <p className="mono-num text-[1rem] font-semibold">{PLANS.websiteOnly.price}</p>
+                <h3 className="text-[0.95rem] font-bold">{PLANS.strategicNote.name}</h3>
+                <p className="mono-num text-[1rem] font-semibold">{PLANS.strategicNote.price}</p>
               </div>
-              <p className="mt-1.5 text-[0.86rem] leading-snug text-ink2">{PLANS.websiteOnly.copy}</p>
+              <p className="mt-1.5 text-[0.86rem] leading-snug text-ink2">{PLANS.strategicNote.copy}</p>
               <Link href="/pricing" className="link-arrow mt-3 text-[0.95rem]">
                 {PLANS.cta}
                 <ArrowRight size={14} />
@@ -350,10 +310,10 @@ export default function DaylightHome() {
       {/* 11 — FINAL CTA */}
       <section className="section-pad">
         <div className="container-g">
-          <Header center eyebrow="Free Growth Audit" h={FINAL_CTA.h} body={FINAL_CTA.body} />
-          {/* FINAL_CTA.micro renders inside the form itself — no duplicate here */}
-          <Reveal className="mx-auto mt-9 max-w-2xl" delay={120}>
-            <AuditForm id="audit-form" />
+          <Header center eyebrow="Book a call" h={FINAL_CTA.h} body={FINAL_CTA.body} />
+          <Reveal className="mt-9 flex flex-col items-center gap-3" delay={120}>
+            <BookCall className="btn btn-primary !px-8 !py-4 text-[1.02rem]" size={16} />
+            <p className="text-[0.88rem] text-ink2">{FINAL_CTA.micro}</p>
           </Reveal>
         </div>
       </section>

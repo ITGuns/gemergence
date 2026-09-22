@@ -8,14 +8,15 @@
  */
 
 import dynamic from "next/dynamic";
+import { FrontDoorPromoBadge, FrontDoorPromoLine } from "@/components/october-promo";
+import { BookCall } from "@/components/book-call";
 import Link from "next/link";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { ArrowRight, Check } from "@/components/icons";
 import {
-  HERO, PROBLEM, SYSTEM, FUEL, DESKII, OFFER, OWNERSHIP,
-  INDUSTRIES, PROCESS, PLANS, WHY, FINAL_CTA,
+  HERO, PROBLEM, SYSTEM, DESKII, OFFER, OWNERSHIP,
+  INDUSTRIES, PROCESS, PLANS, WHY, FINAL_CTA, RESTAURANTS_PAGE,
 } from "@/lib/content";
-import { AuditForm } from "@/components/audit-form";
 import { journey, clamp01, pinProgress } from "./journey-store";
 
 const JourneyScene = dynamic(() => import("./scene"), { ssr: false });
@@ -430,10 +431,7 @@ export default function ImmersiveHome() {
             </h1>
             <p className="measure mt-7 max-w-xl text-[1.12rem] leading-relaxed text-band-mut">{HERO.sub}</p>
             <div className="mt-9 flex flex-wrap items-center gap-5">
-              <Link href="/audit" className="btn btn-primary !px-7 !py-4 text-[1.02rem]">
-                {HERO.primaryCta}
-                <ArrowRight size={16} />
-              </Link>
+              <BookCall className="btn btn-primary !px-7 !py-4 text-[1.02rem]" label={HERO.primaryCta} size={16} />
               <Link href="/how-it-works" className="link-arrow !text-[#7fc8ad] text-[0.98rem]">
                 {HERO.secondaryCta}
                 <ArrowRight size={15} />
@@ -529,33 +527,6 @@ export default function ImmersiveHome() {
         </section>
       </div>
 
-      {/* 3 — GROWTH FUEL (copy right, open typography) */}
-      <section ref={reg(3)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
-        <div className="container-g grid gap-10 lg:grid-cols-12">
-          <div className={`max-w-2xl ${col(-1)}`} data-reveal>
-            <p className="eyebrow !text-[#7fc8ad]">{FUEL.eyebrow}</p>
-            <h2 className="font-display h2 mt-5 text-white">{FUEL.h}</h2>
-            <p className="mt-6 max-w-xl leading-relaxed text-band-mut">{FUEL.body}</p>
-            <ul className="mt-9 grid gap-x-10 gap-y-4 sm:grid-cols-2">
-              {FUEL.channels.map((c) => (
-                <li key={c.name} className="border-t border-band-line pt-3">
-                  <span className="block text-[0.95rem] font-bold text-band-ink">{c.name}</span>
-                  <span className="mt-0.5 block text-[0.86rem] leading-snug text-band-mut">{c.copy}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8 space-y-1.5 border-l-2 border-[#7fc8ad] pl-5 text-[0.92rem]">
-              <p className="font-semibold text-band-ink">{FUEL.eligibility}</p>
-              <p className="text-band-mut">{FUEL.feeLine}</p>
-            </div>
-            <Link href="/marketing" className="link-arrow mt-7 !text-[#7fc8ad] text-[0.98rem]">
-              {FUEL.cta}
-              <ArrowRight size={15} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* 4 — DESKII (copy left) — the whole app grows out of the gem on arrival,
           so this is a single-viewport section now (no pin / no dead scroll). */}
       <section ref={reg(4)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
@@ -591,10 +562,7 @@ export default function ImmersiveHome() {
             <p className="eyebrow !text-[#7fc8ad]">{OFFER.eyebrow}</p>
             <h2 className="font-display h2 mt-5 text-white">{OFFER.h}</h2>
             <p className="mt-7 max-w-xl text-[1.05rem] leading-relaxed text-band-mut">{OFFER.body}</p>
-            <Link href="/audit" className="btn btn-primary mt-9 !px-6 !py-3.5">
-              {OFFER.cta}
-              <ArrowRight size={15} />
-            </Link>
+            <BookCall className="btn btn-primary mt-9 !px-6 !py-3.5" label={OFFER.cta} />
           </div>
         </div>
       </section>
@@ -614,17 +582,13 @@ export default function ImmersiveHome() {
                 </li>
               ))}
               <li className="border-t border-band-line pt-3">
-                <h3 className="font-display text-[1.18rem] text-white">Another service business?</h3>
+                <h3 className="font-display text-[1.18rem] text-white">Another kind of room?</h3>
                 <p className="mt-1 text-[0.88rem] leading-snug text-band-mut">
-                  If your business grows when the phone rings, forms come in, and calendars fill up — the
-                  system fits. Tell us what you do in the audit.
+                  If you serve food or drink to people in a room you run, the system fits. Tell us what you run on the call.
                 </p>
               </li>
             </ul>
-            <Link href="/audit" className="link-arrow mt-7 !text-[#7fc8ad] text-[0.95rem]">
-              Get your audit
-              <ArrowRight size={14} />
-            </Link>
+            <BookCall className="link-arrow mt-7 !text-[#7fc8ad] text-[0.95rem]" size={14} />
           </div>
         </div>
       </section>
@@ -678,6 +642,7 @@ export default function ImmersiveHome() {
                       Most chosen
                     </span>
                   )}
+                  {t.name === RESTAURANTS_PAGE.table.recommendedDuringPromo && <FrontDoorPromoBadge dark />}
                 </div>
                 <p className="mt-3">
                   {t.price.startsWith("From ") ? (
@@ -690,6 +655,7 @@ export default function ImmersiveHome() {
                   )}
                   <span className="text-[0.82rem] text-band-mut">{t.period}</span>
                 </p>
+                {t.name === RESTAURANTS_PAGE.table.recommendedDuringPromo && <FrontDoorPromoLine dark />}
                 <p className="mt-2 min-h-[3.4em] text-[0.84rem] font-medium leading-snug text-band-mut">{t.bestFor}</p>
                 <ul className="mt-3 space-y-1.5 border-t border-band-line pt-3">
                   {t.highlights.map((h) => (
@@ -705,10 +671,10 @@ export default function ImmersiveHome() {
           <div className="mt-6 grid gap-x-10 gap-y-4 border-t border-band-line pt-5 lg:grid-cols-12" data-reveal>
             <div className="lg:col-span-5">
               <div className="flex flex-wrap items-baseline gap-x-4">
-                <h3 className="text-[0.95rem] font-bold text-band-ink">{PLANS.websiteOnly.name}</h3>
-                <p className="mono-num text-[1rem] font-semibold text-band-ink">{PLANS.websiteOnly.price}</p>
+                <h3 className="text-[0.95rem] font-bold text-band-ink">{PLANS.strategicNote.name}</h3>
+                <p className="mono-num text-[1rem] font-semibold text-band-ink">{PLANS.strategicNote.price}</p>
               </div>
-              <p className="mt-1.5 text-[0.84rem] leading-snug text-band-mut">{PLANS.websiteOnly.copy}</p>
+              <p className="mt-1.5 text-[0.84rem] leading-snug text-band-mut">{PLANS.strategicNote.copy}</p>
               <Link href="/pricing" className="link-arrow mt-3 !text-[#7fc8ad] text-[0.95rem]">
                 {PLANS.cta}
                 <ArrowRight size={14} />
@@ -804,7 +770,7 @@ export default function ImmersiveHome() {
             <p className="mt-4 max-w-xl text-[1rem] leading-relaxed text-band-mut">{FINAL_CTA.body}</p>
             <p className="mono-num mt-2 text-[0.82rem] text-band-mut">{FINAL_CTA.micro}</p>
             <div className="glass mt-5 p-5">
-              <AuditForm id="audit-form" />
+              <BookCall className="btn btn-primary !px-8 !py-4 text-[1.02rem]" size={16} />
             </div>
           </div>
         </div>

@@ -17,34 +17,22 @@
  ],
  "nicheSelector": {
   "id": "N-001",
-  "label": "What kind of business is this?",
+  "label": "What kind of room is this?",
   "type": "choice",
   "options": [
-   "HVAC",
-   "Personal Injury Law",
-   "Home Services",
+   "Full-Service Restaurant",
+   "Bar / Taphouse",
+   "Fast Casual / Counter Service",
+   "Café / Bakery",
    "Other / General"
   ],
-  "homeServicesSelector": {
+  "subSelector": {
    "id": "N-002",
-   "label": "Which trade?",
+   "label": "",
    "type": "choice",
-   "options": [
-    "Septic Services",
-    "Roofing",
-    "Window Cleaning",
-    "Pest Control",
-    "Plumbing",
-    "Electrical",
-    "Landscaping / Lawn",
-    "House Cleaning",
-    "Garage Door",
-    "Pressure Washing",
-    "Gutters",
-    "Painting",
-    "Other Home Service"
-   ]
-  }
+   "options": []
+  },
+  "subSelectorParent": null
  },
  "core": [
   {
@@ -178,254 +166,161 @@
   }
  ],
  "niche": {
-  "hvac": {
-   "label": "HVAC",
+  "full_service": {
+   "label": "Full-Service Restaurant",
    "group": null,
    "fields": [
     {
-     "id": "H-101",
-     "label": "Services you offer:",
-     "options": [
-      "AC repair",
-      "AC install",
-      "Heating",
-      "Maintenance plans",
-      "Ductwork",
-      "Air quality"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "H-201",
-     "label": "Emergency service:",
-     "options": [
-      "24/7",
-      "After-hours (fee)",
-      "Business hours only"
-     ],
-     "hint": "",
-     "type": "choice",
-     "required": true
-    },
-    {
-     "id": "H-203",
-     "label": "Do you sell a maintenance plan/membership?",
-     "options": [
-      "Yes",
-      "No",
-      "Want to start one"
-     ],
-     "hint": "",
-     "type": "choice"
-    },
-    {
-     "id": "H-204",
-     "label": "Financing offered?",
-     "options": [
-      "Yes",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    },
-    {
-     "id": "H-301",
-     "label": "State license #",
-     "hint": "Shown on your site — required in most states",
+     "id": "R-101",
+     "label": "Cuisine or style:",
+     "hint": "How you would describe the room to a guest.",
      "type": "text",
      "required": true
-    }
-   ]
-  },
-  "personal_injury": {
-   "label": "Personal Injury Law",
-   "group": null,
-   "fields": [
+    },
     {
-     "id": "P-101",
-     "label": "Case types:",
+     "id": "R-201",
+     "label": "Service periods you run:",
      "options": [
-      "Car accidents",
-      "Truck",
-      "Motorcycle",
-      "Slip & fall",
-      "Medical malpractice",
-      "Workers' comp",
-      "Wrongful death",
-      "Dog bites"
+      "Breakfast",
+      "Brunch",
+      "Lunch",
+      "Dinner",
+      "Late night"
      ],
      "hint": "",
      "type": "multichoice",
      "required": true
     },
     {
-     "id": "P-301",
-     "label": "Consultations:",
+     "id": "R-202",
+     "label": "How do guests book today?",
      "options": [
-      "Free, 24/7 phones",
-      "Free, business hours",
-      "Paid consult"
+      "Phone only",
+      "Phone and email",
+      "A booking widget we already pay for",
+      "Walk-ins only",
+      "Nothing right now"
      ],
      "hint": "",
      "type": "choice",
      "required": true
     },
     {
-     "id": "P-302",
-     "label": "Intake languages:",
+     "id": "R-203",
+     "label": "What POS do you run?",
      "options": [
-      "English",
-      "Spanish",
-      "Other"
+      "Square",
+      "Toast",
+      "Clover",
+      "Lightspeed",
+      "TouchBistro",
+      "SpotOn",
+      "Aloha",
+      "Micros / Oracle",
+      "Something older",
+      "Not sure"
      ],
-     "hint": "",
-     "type": "multichoice"
-    },
-    {
-     "id": "P-201",
-     "label": "Fee line for the site:",
-     "options": [
-      "\"No fee unless we win\" (standard)",
-      "We'll provide custom wording"
-     ],
-     "hint": "",
+     "hint": "We check whether it can connect before you commit — free, and you get a straight answer.",
      "type": "choice",
      "required": true
     },
     {
-     "id": "P-401",
-     "label": "15-min compliance call with the responsible attorney before launch?",
-     "options": [
-      "Yes — required for us",
-      "Yes"
-     ],
-     "hint": "Bar advertising rules vary by state; we verify everything publishable on this call",
-     "type": "choice",
-     "required": true
-    }
-   ]
-  },
-  "septic": {
-   "label": "Septic Services",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-211",
-     "label": "Services:",
-     "options": [
-      "Pumping/cleaning",
-      "Inspections",
-      "Repairs",
-      "Installs",
-      "Drain field",
-      "Grease traps"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-213",
-     "label": "Emergency backups?",
-     "options": [
-      "24/7",
-      "Same-day usually",
-      "Scheduled only"
-     ],
-     "hint": "",
-     "type": "choice",
-     "required": true
-    },
-    {
-     "id": "S-214",
-     "label": "Do you handle county permits?",
-     "options": [
-      "Yes",
-      "No",
-      "Sometimes"
-     ],
-     "hint": "",
-     "type": "choice"
-    }
-   ]
-  },
-  "roofing": {
-   "label": "Roofing",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-221",
-     "label": "Work you do:",
-     "options": [
-      "Repairs",
-      "Full replacement",
-      "Storm/insurance claims",
-      "Inspections",
-      "Metal",
-      "Flat/commercial"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-223",
-     "label": "Help with insurance claims?",
-     "options": [
-      "Yes — we guide the process",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice",
-     "required": true
-    },
-    {
-     "id": "S-224",
-     "label": "Free inspections?",
-     "options": [
-      "Yes",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    },
-    {
-     "id": "S-222",
-     "label": "Manufacturer certifications (optional)",
-     "hint": "GAF, Owens Corning tier, etc.",
+     "id": "R-204",
+     "label": "Link to your current menu:",
+     "hint": "A PDF, a photo, or a link — whatever you have.",
      "type": "text",
      "optional": true
+    },
+    {
+     "id": "R-301",
+     "label": "Seats in the room (rough is fine):",
+     "hint": "Used to size your table plan.",
+     "type": "text",
+     "required": true
     }
    ]
   },
-  "window_cleaning": {
-   "label": "Window Cleaning",
-   "group": "home_services",
+  "bar_taphouse": {
+   "label": "Bar / Taphouse",
+   "group": null,
    "fields": [
     {
-     "id": "S-231",
-     "label": "Scope:",
+     "id": "B-101",
+     "label": "What you are known for:",
      "options": [
-      "Homes",
-      "Storefronts",
-      "High-rise",
-      "Screens & tracks",
-      "Gutter add-on",
-      "Pressure washing add-on"
+      "Craft beer",
+      "Cocktails",
+      "Wine",
+      "Sports",
+      "Live music",
+      "Food menu"
      ],
      "hint": "",
      "type": "multichoice",
      "required": true
     },
     {
-     "id": "S-233",
-     "label": "Recurring plans?",
+     "id": "B-201",
+     "label": "Service periods you run:",
      "options": [
-      "Yes — most clients recur",
-      "Some",
-      "One-time mostly"
+      "Breakfast",
+      "Brunch",
+      "Lunch",
+      "Dinner",
+      "Late night"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "B-202",
+     "label": "How do guests book today?",
+     "options": [
+      "Phone only",
+      "Phone and email",
+      "A booking widget we already pay for",
+      "Walk-ins only",
+      "Nothing right now"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "B-203",
+     "label": "What POS do you run?",
+     "options": [
+      "Square",
+      "Toast",
+      "Clover",
+      "Lightspeed",
+      "TouchBistro",
+      "SpotOn",
+      "Aloha",
+      "Micros / Oracle",
+      "Something older",
+      "Not sure"
+     ],
+     "hint": "We check whether it can connect before you commit — free, and you get a straight answer.",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "B-204",
+     "label": "Link to your current menu:",
+     "hint": "A PDF, a photo, or a link — whatever you have.",
+     "type": "text",
+     "optional": true
+    },
+    {
+     "id": "B-301",
+     "label": "How often does the tap or cocktail list change?",
+     "options": [
+      "Daily",
+      "Weekly",
+      "Monthly",
+      "Rarely"
      ],
      "hint": "",
      "type": "choice",
@@ -433,75 +328,165 @@
     }
    ]
   },
-  "pest_control": {
-   "label": "Pest Control",
-   "group": "home_services",
+  "fast_casual": {
+   "label": "Fast Casual / Counter Service",
+   "group": null,
    "fields": [
     {
-     "id": "S-241",
-     "label": "Pests treated:",
+     "id": "F-101",
+     "label": "Are you on delivery apps today?",
      "options": [
-      "General (ants/roaches)",
-      "Rodents",
-      "Termites",
-      "Bed bugs",
-      "Mosquitoes",
-      "Wildlife"
+      "DoorDash",
+      "Uber Eats",
+      "Grubhub",
+      "None"
      ],
      "hint": "",
      "type": "multichoice",
      "required": true
     },
     {
-     "id": "S-243",
-     "label": "Service model:",
+     "id": "F-201",
+     "label": "Service periods you run:",
      "options": [
-      "Quarterly plans",
-      "One-time",
-      "Both"
+      "Breakfast",
+      "Brunch",
+      "Lunch",
+      "Dinner",
+      "Late night"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "F-202",
+     "label": "How do guests book today?",
+     "options": [
+      "Phone only",
+      "Phone and email",
+      "A booking widget we already pay for",
+      "Walk-ins only",
+      "Nothing right now"
      ],
      "hint": "",
      "type": "choice",
      "required": true
     },
     {
-     "id": "S-244",
-     "label": "Pet/child-safe options?",
+     "id": "F-203",
+     "label": "What POS do you run?",
+     "options": [
+      "Square",
+      "Toast",
+      "Clover",
+      "Lightspeed",
+      "TouchBistro",
+      "SpotOn",
+      "Aloha",
+      "Micros / Oracle",
+      "Something older",
+      "Not sure"
+     ],
+     "hint": "We check whether it can connect before you commit — free, and you get a straight answer.",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "F-204",
+     "label": "Link to your current menu:",
+     "hint": "A PDF, a photo, or a link — whatever you have.",
+     "type": "text",
+     "optional": true
+    },
+    {
+     "id": "F-301",
+     "label": "Rough monthly delivery and pickup volume, in dollars:",
+     "hint": "Used to show what moving orders onto your own site is worth.",
+     "type": "text",
+     "required": true
+    }
+   ]
+  },
+  "cafe_bakery": {
+   "label": "Café / Bakery",
+   "group": null,
+   "fields": [
+    {
+     "id": "C-101",
+     "label": "What you make:",
+     "options": [
+      "Coffee",
+      "Pastry",
+      "Bread",
+      "Cakes and orders",
+      "Full food menu"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "C-201",
+     "label": "Service periods you run:",
+     "options": [
+      "Breakfast",
+      "Brunch",
+      "Lunch",
+      "Dinner",
+      "Late night"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "C-202",
+     "label": "How do guests book today?",
+     "options": [
+      "Phone only",
+      "Phone and email",
+      "A booking widget we already pay for",
+      "Walk-ins only",
+      "Nothing right now"
+     ],
+     "hint": "",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "C-203",
+     "label": "What POS do you run?",
+     "options": [
+      "Square",
+      "Toast",
+      "Clover",
+      "Lightspeed",
+      "TouchBistro",
+      "SpotOn",
+      "Aloha",
+      "Micros / Oracle",
+      "Something older",
+      "Not sure"
+     ],
+     "hint": "We check whether it can connect before you commit — free, and you get a straight answer.",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "C-204",
+     "label": "Link to your current menu:",
+     "hint": "A PDF, a photo, or a link — whatever you have.",
+     "type": "text",
+     "optional": true
+    },
+    {
+     "id": "C-301",
+     "label": "Do you take custom or catering orders?",
      "options": [
       "Yes",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    }
-   ]
-  },
-  "plumbing": {
-   "label": "Plumbing",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-251",
-     "label": "Signature services:",
-     "options": [
-      "Emergency/burst",
-      "Drains & sewer",
-      "Water heaters",
-      "Repipes",
-      "Leak detection",
-      "Remodels"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-253",
-     "label": "Emergency availability:",
-     "options": [
-      "24/7",
-      "After-hours (fee)",
-      "Business hours"
+      "No",
+      "Want to start"
      ],
      "hint": "",
      "type": "choice",
@@ -509,287 +494,82 @@
     }
    ]
   },
-  "electrical": {
-   "label": "Electrical",
-   "group": "home_services",
+  "other_general": {
+   "label": "Other / General",
+   "group": null,
    "fields": [
     {
-     "id": "S-261",
-     "label": "Signature services:",
-     "options": [
-      "Panel upgrades",
-      "EV chargers",
-      "Generators",
-      "Lighting",
-      "Rewires",
-      "Inspections"
-     ],
+     "id": "O-101",
+     "label": "Describe the room in a sentence:",
      "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-263",
-     "label": "Emergency availability:",
-     "options": [
-      "24/7",
-      "After-hours (fee)",
-      "Business hours"
-     ],
-     "hint": "",
-     "type": "choice",
-     "required": true
-    }
-   ]
-  },
-  "landscaping": {
-   "label": "Landscaping / Lawn",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-271",
-     "label": "Work mix:",
-     "options": [
-      "Recurring maintenance",
-      "Design & build",
-      "Hardscape",
-      "Irrigation",
-      "Cleanups"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-273",
-     "label": "Maintenance plans?",
-     "options": [
-      "Weekly/bi-weekly plans",
-      "Mostly one-time projects",
-      "Both"
-     ],
-     "hint": "",
-     "type": "choice",
-     "required": true
-    }
-   ]
-  },
-  "house_cleaning": {
-   "label": "House Cleaning",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-281",
-     "label": "Service types:",
-     "options": [
-      "Recurring",
-      "One-time/deep",
-      "Move in/out",
-      "Offices"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-283",
-     "label": "Online booking with instant prices?",
-     "options": [
-      "Yes — want that",
-      "Prefer quote first"
-     ],
-     "hint": "",
-     "type": "choice",
-     "required": true
-    }
-   ]
-  },
-  "garage_door": {
-   "label": "Garage Door",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-291",
-     "label": "Work:",
-     "options": [
-      "Spring/cable repair",
-      "Openers",
-      "New doors",
-      "Commercial"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-293",
-     "label": "Same-day spring repair?",
-     "options": [
-      "Yes",
-      "Usually",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    }
-   ]
-  },
-  "pressure_washing": {
-   "label": "Pressure Washing",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-292",
-     "label": "Surfaces:",
-     "options": [
-      "House/soft wash",
-      "Roofs",
-      "Driveways",
-      "Decks",
-      "Commercial/fleets"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-294",
-     "label": "Bundle with windows/gutters?",
-     "options": [
-      "Yes",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    }
-   ]
-  },
-  "gutters": {
-   "label": "Gutters",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-311",
-     "label": "Services:",
-     "options": [
-      "Cleaning",
-      "Repair",
-      "New installs",
-      "Guards"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-313",
-     "label": "Recurring cleaning plans?",
-     "options": [
-      "Yes",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    }
-   ]
-  },
-  "painting": {
-   "label": "Painting",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-321",
-     "label": "Work:",
-     "options": [
-      "Interior",
-      "Exterior",
-      "Cabinets",
-      "Commercial"
-     ],
-     "hint": "",
-     "type": "multichoice",
-     "required": true
-    },
-    {
-     "id": "S-323",
-     "label": "Free color consultation?",
-     "options": [
-      "Yes",
-      "No"
-     ],
-     "hint": "",
-     "type": "choice"
-    }
-   ]
-  },
-  "other_home_service": {
-   "label": "Other Home Service",
-   "group": "home_services",
-   "fields": [
-    {
-     "id": "S-901",
-     "label": "Your trade + the 2–3 services to lead with",
-     "hint": "One line is enough",
      "type": "text",
      "required": true
     },
     {
-     "id": "S-902",
-     "label": "Urgency model:",
+     "id": "O-201",
+     "label": "Service periods you run:",
      "options": [
-      "24/7 emergency",
-      "Same-day usually",
-      "Scheduled only"
+      "Breakfast",
+      "Brunch",
+      "Lunch",
+      "Dinner",
+      "Late night"
+     ],
+     "hint": "",
+     "type": "multichoice",
+     "required": true
+    },
+    {
+     "id": "O-202",
+     "label": "How do guests book today?",
+     "options": [
+      "Phone only",
+      "Phone and email",
+      "A booking widget we already pay for",
+      "Walk-ins only",
+      "Nothing right now"
      ],
      "hint": "",
      "type": "choice",
+     "required": true
+    },
+    {
+     "id": "O-203",
+     "label": "What POS do you run?",
+     "options": [
+      "Square",
+      "Toast",
+      "Clover",
+      "Lightspeed",
+      "TouchBistro",
+      "SpotOn",
+      "Aloha",
+      "Micros / Oracle",
+      "Something older",
+      "Not sure"
+     ],
+     "hint": "We check whether it can connect before you commit — free, and you get a straight answer.",
+     "type": "choice",
+     "required": true
+    },
+    {
+     "id": "O-204",
+     "label": "Link to your current menu:",
+     "hint": "A PDF, a photo, or a link — whatever you have.",
+     "type": "text",
+     "optional": true
+    },
+    {
+     "id": "O-301",
+     "label": "Seats in the room (rough is fine):",
+     "hint": "Used to size your table plan.",
+     "type": "text",
      "required": true
     }
    ]
   }
  },
- "derivations": {
-  "D-720": {
-   "Clean & modern": {
-    "D-705": "Light & airy",
-    "D-706": "Clean & modern",
-    "D-708": "Balanced"
-   },
-   "Warm & friendly": {
-    "D-705": "Light & airy",
-    "D-706": "Soft & friendly",
-    "D-708": "Balanced"
-   },
-   "Bold & confident": {
-    "D-705": "Dark & dramatic",
-    "D-706": "Bold & loud",
-    "D-708": "Info-packed & practical"
-   },
-   "Premium & elegant": {
-    "D-705": "No preference",
-    "D-706": "Classic & established",
-    "D-708": "Spacious & premium"
-   }
-  },
-  "D-722": {
-   "Logo + photos of our work": {
-    "D-710": "Logo available",
-    "D-707": "Real photos of our work/team"
-   },
-   "Logo only": {
-    "D-710": "Logo available",
-    "D-707": "Premium stock photography"
-   },
-   "Photos only": {
-    "D-710": "Text-logo treatment needed",
-    "D-707": "Real photos of our work/team"
-   },
-   "Neither yet": {
-    "D-710": "Text-logo treatment needed",
-    "D-707": "Premium stock photography"
-   }
-  }
- },
+ "derivations": {},
  "followUpPool": [
   "D-303 promo/offer",
   "D-403 FAQ questions",

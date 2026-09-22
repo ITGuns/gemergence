@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "@/components/icons";
+import { BookCall } from "@/components/book-call";
 
 export default function NotFound() {
   return (
@@ -11,16 +11,13 @@ export default function NotFound() {
         </h1>
         <p className="measure mt-6 text-[1.05rem] leading-relaxed text-ink2">
           The link may be old or mistyped. Either way, nothing is lost: the whole site is one click
-          away, and so is the audit.
+          away, and so is a call.
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
           <Link href="/" className="btn btn-ghost">
             Back to the homepage
           </Link>
-          <Link href="/audit" className="btn btn-primary">
-            Get a Free Growth Audit
-            <ArrowRight size={15} />
-          </Link>
+          <BookCall className="btn btn-primary" />
         </div>
       </div>
     </section>

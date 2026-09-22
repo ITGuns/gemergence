@@ -26,7 +26,10 @@ type RawSchema = {
     id: string;
     label: string;
     options: string[];
-    homeServicesSelector: { id: string; label: string; options: string[] };
+    subSelector: { id: string; label: string; options: string[] };
+    /** N-001 option that opens the sub-selector, or null when the taxonomy
+     *  is flat (it is for restaurants) and N-002 never renders. */
+    subSelectorParent: string | null;
   };
   core: RawField[];
   niche: Record<
@@ -67,10 +70,13 @@ export const NICHE_SELECTOR = {
 };
 
 export const TRADE_SELECTOR = {
-  id: schema.nicheSelector.homeServicesSelector.id, // N-002
-  label: schema.nicheSelector.homeServicesSelector.label,
-  options: schema.nicheSelector.homeServicesSelector.options,
+  id: schema.nicheSelector.subSelector.id, // N-002
+  label: schema.nicheSelector.subSelector.label,
+  options: schema.nicheSelector.subSelector.options,
 };
+
+/** The N-001 option that opens N-002, or null on a flat taxonomy. */
+export const SUB_SELECTOR_PARENT = schema.nicheSelector.subSelectorParent;
 
 export function niches(): NicheDef[] {
   return Object.entries(schema.niche).map(([key, n]) => ({
@@ -81,18 +87,17 @@ export function niches(): NicheDef[] {
   }));
 }
 
-/** N-001 top-level option → niche key (or "home_services" / "other" markers). */
+/** N-001 top-level option → niche key. On a grouped taxonomy the parent option
+ *  defers to N-002; on a flat one (restaurants) N-001 resolves on its own. */
 export function resolveNicheSelection(
   n001: string | undefined,
   n002: string | undefined,
 ): { nicheKey: string | null; needsTrade: boolean } {
   if (!n001) return { nicheKey: null, needsTrade: false };
-  if (n001 === "Home Services") {
+  if (SUB_SELECTOR_PARENT && n001 === SUB_SELECTOR_PARENT) {
     if (!n002) return { nicheKey: null, needsTrade: true };
-    const byLabel = niches().find(
-      (n) => n.group === "home_services" && n.label === n002,
-    );
-    return { nicheKey: byLabel?.key ?? "other_home_service", needsTrade: true };
+    const byLabel = niches().find((n) => n.group !== null && n.label === n002);
+    return { nicheKey: byLabel?.key ?? "other_general", needsTrade: true };
   }
   const direct = niches().find((n) => n.group === null && n.label === n001);
   // "Other / General" has no sub-form by design — core answers carry the build.

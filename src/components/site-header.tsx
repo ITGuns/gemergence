@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BookCall } from "@/components/book-call";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Wordmark } from "./logo";
@@ -9,11 +10,10 @@ import { SITE } from "@/lib/constants";
 
 const NAV = [
   { label: "Services", href: "/#system" },
-  { label: "Marketing", href: "/marketing" },
-  { label: "Industries", href: "/#industries" },
+  { label: "Who We Help", href: "/#industries" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Restaurants", href: "/restaurants" },
+  { label: "Deskii", href: "/deskii" },
   { label: "About", href: "/about" },
 ];
 
@@ -71,10 +71,7 @@ export function SiteHeader() {
               {SITE.phoneDisplay ?? SITE.phone}
             </a>
           )}
-          <Link href="/audit" className="btn btn-primary hidden !px-4 !py-2.5 text-[0.88rem] sm:inline-flex">
-            Get a Free Growth Audit
-            <ArrowRight size={15} />
-          </Link>
+          <BookCall className="btn btn-primary hidden !px-4 !py-2.5 text-[0.88rem] sm:inline-flex" />
           <button
             type="button"
             className={`-mr-1 p-1.5 lg:hidden ${dark ? "text-band-ink" : ""}`}
@@ -106,14 +103,16 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          <Link
-            href="/audit"
+          <a
+            href={SITE.calendly}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setOpen(false)}
             className="btn btn-primary mt-5 w-full justify-center"
           >
-            Get a Free Growth Audit
+            Book a call
             <ArrowRight size={15} />
-          </Link>
+          </a>
         </nav>
       )}
     </header>

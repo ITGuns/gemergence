@@ -315,7 +315,7 @@ export function SalesPanel() {
               <option value="">Client picks ({NICHE_SELECTOR.id}/{TRADE_SELECTOR.id})</option>
               {niches().map((n) => (
                 <option key={n.key} value={n.key}>
-                  {n.group === "home_services" ? `Home Services · ${n.label}` : n.label}
+                  {n.group ? `${n.group} · ${n.label}` : n.label}
                 </option>
               ))}
             </select>

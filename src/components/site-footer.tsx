@@ -1,19 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { BookCall } from "@/components/book-call";
 import { usePathname } from "next/navigation";
 import { Wordmark } from "./logo";
-import { ArrowRight } from "./icons";
+
 import { SITE } from "@/lib/constants";
 import { FOOTER } from "@/lib/content";
 
 const LINKS = [
   { label: "Services", href: "/#system" },
-  { label: "Marketing", href: "/marketing" },
-  { label: "Industries", href: "/#industries" },
+  { label: "Who We Help", href: "/#industries" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Restaurants", href: "/restaurants" },
   { label: "Deskii", href: "/deskii" },
   { label: "About", href: "/about" },
 ];
@@ -77,10 +76,7 @@ export function SiteFooter() {
                 </div>
               ))}
             </dl>
-            <Link href="/audit" className="btn btn-primary mt-7">
-              Get a Free Growth Audit
-              <ArrowRight size={15} />
-            </Link>
+            <BookCall className="btn btn-primary mt-7" />
           </div>
         </div>
 

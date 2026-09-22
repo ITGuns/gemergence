@@ -15,6 +15,7 @@ import {
   nicheFields,
   nicheLabel,
   resolveNicheSelection,
+  SUB_SELECTOR_PARENT,
   TRADE_SELECTOR,
   visibleCoreFields,
 } from "@/lib/intake/schema";
@@ -232,7 +233,7 @@ export function IntakeWizard({ resume, plan }: Props) {
       case 4: {
         if (!preselect?.niche) {
           if (!n001) return false;
-          if (n001 === "Home Services" && !n002) return false;
+          if (SUB_SELECTOR_PARENT && n001 === SUB_SELECTOR_PARENT && !n002) return false;
         }
         return missingRequired(subFormFields, answers).length === 0;
       }
@@ -497,7 +498,7 @@ export function IntakeWizard({ resume, plan }: Props) {
                 value={n001}
                 onChange={(v) => setAnswer(NICHE_SELECTOR.id, v)}
               />
-              {n001 === "Home Services" && (
+              {SUB_SELECTOR_PARENT && n001 === SUB_SELECTOR_PARENT && (
                 <FieldInput
                   field={{
                     id: TRADE_SELECTOR.id,
