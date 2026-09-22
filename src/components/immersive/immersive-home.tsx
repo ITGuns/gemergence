@@ -26,9 +26,11 @@ const col = (side: 1 | -1) =>
   side === 1 ? "lg:col-span-6" : "lg:col-span-6 lg:col-start-7";
 
 /** Wayfinding: one tick per journey stop, current chapter read out below. */
+// One per SECTION_IDS entry, in the same order — the rail indexes into
+// secEls by position, so these two lists must stay the same length.
 const CHAPTERS = [
-  "Start", "The problem", "The system", "Growth fuel", "Deskii", "The offer",
-  "Industries", "How it works", "Plans", "Trust", "Begin",
+  "Start", "The problem", "The system", "Deskii", "The offer",
+  "Who we help", "How it works", "Plans", "Trust", "Begin",
 ];
 
 /** Crossfade styles for the 2-beat pinned chapters (process/proof, trust). */
@@ -384,8 +386,8 @@ export default function ImmersiveHome() {
         journey.t = t;
         setSec((p) => (p === idx ? p : idx));
         journey.sys = pinProgress(secEls.current[2] as HTMLElement);
-        journey.desk = pinProgress(secEls.current[4] as HTMLElement);
-        journey.trust = pinProgress(secEls.current[9] as HTMLElement);
+        journey.desk = pinProgress(secEls.current[3] as HTMLElement);
+        journey.trust = pinProgress(secEls.current[8] as HTMLElement);
         const pi = Math.min(6, Math.floor(journey.sys * 7));
         setPillar((p) => (p === pi ? p : pi));
         const di = Math.min(5, Math.floor(journey.desk * 6));
@@ -527,9 +529,9 @@ export default function ImmersiveHome() {
         </section>
       </div>
 
-      {/* 4 — DESKII (copy left) — the whole app grows out of the gem on arrival,
+      {/* 3 — DESKII (copy left) — the whole app grows out of the gem on arrival,
           so this is a single-viewport section now (no pin / no dead scroll). */}
-      <section ref={reg(4)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
+      <section ref={reg(3)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
           <div className="max-w-xl lg:col-span-6" data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{DESKII.eyebrow}</p>
@@ -554,9 +556,9 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 5 — OFFER (copy right, open typography; the qualification card lives
+      {/* 4 — OFFER (copy right, open typography; the qualification card lives
           with Plans now — same message, next to the prices it qualifies) */}
-      <section ref={reg(5)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
+      <section ref={reg(4)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
           <div className={`max-w-2xl ${col(-1)}`} data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{OFFER.eyebrow}</p>
@@ -567,8 +569,8 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 6 — INDUSTRIES (copy left now — Ownership moved into the Trust chapter) */}
-      <section ref={reg(6)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]" id="industries">
+      {/* 5 — INDUSTRIES (copy left now — Ownership moved into the Trust chapter) */}
+      <section ref={reg(5)} className="relative z-10 flex min-h-screen items-center max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]" id="industries">
         <div className="container-g grid gap-10 lg:grid-cols-12">
           <div className="max-w-2xl lg:col-span-6" data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{INDUSTRIES.eyebrow}</p>
@@ -593,8 +595,8 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 7 — HOW IT WORKS (single-viewport Process; copy right) */}
-      <section ref={reg(7)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
+      {/* 6 — HOW IT WORKS (single-viewport Process; copy right) */}
+      <section ref={reg(6)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
           <div className={`max-w-2xl ${col(-1)}`} data-reveal>
             <p className="eyebrow !text-[#7fc8ad]">{PROCESS.eyebrow}</p>
@@ -618,9 +620,9 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 8 — PLANS (full-width structured pricing; the qualification from the
+      {/* 7 — PLANS (full-width structured pricing; the qualification from the
           Offer chapter lives here, next to the prices it qualifies) */}
-      <section ref={reg(8)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
+      <section ref={reg(7)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[42vh]">
         <div className="container-g w-full">
           <div className="grid gap-8 lg:grid-cols-12" data-reveal>
             <div className="lg:col-span-7">
@@ -690,8 +692,8 @@ export default function ImmersiveHome() {
         </div>
       </section>
 
-      {/* 9 — TRUST (pinned, 2 beats: ownership → why; copy right) */}
-      <div ref={reg(9)} className="relative h-[200vh]">
+      {/* 8 — TRUST (pinned, 2 beats: ownership → why; copy right) */}
+      <div ref={reg(8)} className="relative h-[200vh]">
         {[0, 1].map((i) => (
           <div key={i} className="snap-beat" style={{ top: `${((i + 0.5) / 2) * 100}vh` }} aria-hidden />
         ))}
@@ -762,8 +764,8 @@ export default function ImmersiveHome() {
         </section>
       </div>
 
-      {/* 10 — FINAL CTA (copy left) */}
-      <section ref={reg(10)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[38vh]">
+      {/* 9 — FINAL CTA (copy left) */}
+      <section ref={reg(9)} className="relative z-10 flex min-h-screen items-center pt-16 max-lg:items-start max-lg:pb-20 max-lg:pt-[38vh]">
         <div className="container-g grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-6" data-reveal>
             <h2 className="font-display h2 text-white">{FINAL_CTA.h}</h2>

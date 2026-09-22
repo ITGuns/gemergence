@@ -10,7 +10,7 @@
  * modules as you scroll. No speed lines, no scatter: calm ambient motes only.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, Line, Text } from "@react-three/drei";
@@ -633,63 +633,6 @@ function ScreenPanel({
   );
 }
 
-/** A panel textured with a baked screenshot of a REAL page (2x PNG in
- *  /public/exhibits) — pixel-real websites, same shadow/glow stack. */
-function ImagePanel({
-  url,
-  w,
-  h,
-  r = 0.1,
-  glow = EM_LIGHT,
-  glowOpacity = 0.3,
-  shadow = true,
-  position = [0, 0, 0] as [number, number, number],
-}: {
-  url: string;
-  w: number;
-  h: number;
-  r?: number;
-  glow?: string;
-  glowOpacity?: number;
-  shadow?: boolean;
-  position?: [number, number, number];
-}) {
-  const [tex, setTex] = useState<THREE.Texture | null>(null);
-  useEffect(() => {
-    const t = new THREE.TextureLoader().load(url, () => setTex(t));
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = 8;
-    t.repeat.set(1 / w, 1 / h);
-    t.offset.set(0.5, 0.5);
-    return () => {
-      t.dispose();
-    };
-  }, [url, w, h]);
-  return (
-    <group position={position}>
-      {shadow && (
-        <mesh position={[0, -0.16, -0.01]}>
-          <planeGeometry args={[w * 1.35, h * 1.35]} />
-          <meshBasicMaterial map={softShadowTex()} transparent opacity={0.55} depthWrite={false} />
-        </mesh>
-      )}
-      <mesh geometry={rrGeo(w + 0.034, h + 0.034, r + 0.017)} position={[0, 0, -0.004]}>
-        <meshBasicMaterial color={glow} transparent opacity={glowOpacity} depthWrite={false} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh geometry={rrGeo(w, h, r)}>
-        <meshBasicMaterial
-          map={tex}
-          color={tex ? "#ffffff" : "#fbfbf8"}
-          transparent
-          depthWrite={false}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-          fog={false}
-        />
-      </mesh>
-    </group>
-  );
-}
 
 function CheckMark({ position = [0, 0, 0] as [number, number, number], scale = 1 }: { position?: [number, number, number]; scale?: number }) {
   return (
@@ -715,7 +658,6 @@ const GEM_POSE: Record<SectionId, GemPose> = {
   hero: { y: 0.1, s: 1.6 },
   problem: { y: 0.1, s: 0.6, dim: true },
   system: { y: 2.5, s: 0.6 },
-  fuel: { y: -0.1, s: 0.85 },
   deskii: { y: 2.7, s: 0.38 },
   offer: { y: 1.2, s: 0.65, dx: -1.5 },
   industries: { y: -0.15, s: 0.62 },
@@ -857,10 +799,10 @@ function Gem() {
 
     // module ring: previews the system assembling (system beat only)
     if (ring.current) {
-      ring.current.visible = id === "system" || id === "fuel";
+      ring.current.visible = id === "system";
       ring.current.rotation.y = t * 0.22;
       ring.current.children.forEach((p, i) => {
-        const lock = id === "fuel" ? 1 : smooth(clamp01(journey.sys * 7 - i));
+        const lock = smooth(clamp01(journey.sys * 7 - i));
         p.scale.setScalar(0.6 + lock * 0.7);
         const m = (p as THREE.Mesh).material as THREE.MeshBasicMaterial;
         m.opacity = 0.25 + lock * 0.75;
@@ -1082,7 +1024,16 @@ function PillarWebsite() {
       </group>
       {/* tier 2 — the finished page content grows out of the window centre */}
       <group ref={inner} position={[0, 0, 0.01]}>
-        <ImagePanel url="/exhibits/site-summit-pillar.jpg" w={W} h={H * (619 / 675)} r={0.06} glowOpacity={0} shadow={false} position={[0, -(H - H * (619 / 675)) / 2, 0]} />
+        <ScreenPanel
+          w={W}
+          h={H * (619 / 675)}
+          px={1024}
+          r={0.06}
+          draw={drawGemfieldSitePart("content")}
+          glowOpacity={0}
+          shadow={false}
+          position={[0, -(H - H * (619 / 675)) / 2, 0]}
+        />
         {/* cursor + click pulse — aimed at the drawn CTA */}
         <group ref={cursor}>
           <mesh rotation={[0, 0, -0.5]}>
@@ -1120,7 +1071,7 @@ function PillarVisibility() {
           <ringGeometry args={[0.07, 0.095, 20]} />
           <meshBasicMaterial color={MUT} transparent opacity={0.9} depthWrite={false} />
         </mesh>
-        <Label text="best service company near me" size={0.105} color={MUT} position={[-1.2, 0, 0.01]} anchorX="left" />
+        <Label text="best taphouse near me open now" size={0.105} color={MUT} position={[-1.2, 0, 0.01]} anchorX="left" />
         <group position={[1.38, 0, 0.012]}>
           <RPane w={0.5} h={0.3} r={0.15} color={EMERALD} border={EM_LIGHT} borderOpacity={0.5} />
           <Label text="#1" size={0.11} color="#eaf6ef" position={[0, 0, 0.01]} />
@@ -1182,11 +1133,11 @@ function PillarCapture() {
   const rows: [string, number, number][] = [
     ["NAME", 0.72, 1.5],
     ["PHONE", 0.22, 1.1],
-    ["WHAT DO YOU NEED?", -0.28, 2.0],
+    ["DATE, TIME, HOW MANY?", -0.28, 2.0],
   ];
   return (
     <group>
-      <Window w={3.7} h={3.1} title="Request a quote">
+      <Window w={3.7} h={3.1} title="Request a table">
         {rows.map(([label, y]) => (
           <group key={label} position={[0, y, 0]}>
             <Label text={label} size={0.062} color={MUT} position={[-1.5, 0.21, 0.01]} anchorX="left" />
@@ -1206,13 +1157,13 @@ function PillarCapture() {
         </group>
         <PopKid delay={1.7} position={[0, -0.95, 0.01]}>
           <RPane w={3.0} h={0.42} r={0.21} color={EMERALD} border={EM_LIGHT} borderOpacity={0.55} />
-          <Label text="REQUEST MY QUOTE" size={0.095} color="#eaf6ef" position={[0, 0, 0.01]} />
+          <Label text="REQUEST THE TABLE" size={0.095} color="#eaf6ef" position={[0, 0, 0.01]} />
         </PopKid>
       </Window>
       <PopKid delay={2.2} position={[1.75, 1.85, 0.05]}>
         <RPane w={1.5} h={0.44} r={0.22} color={PANEL} border={EM_LIGHT} borderOpacity={0.6} />
         <CheckMark position={[-0.5, 0, 0.01]} scale={0.6} />
-        <Label text="NEW LEAD" size={0.095} position={[0.08, 0, 0.01]} />
+        <Label text="NEW BOOKING" size={0.095} position={[0.08, 0, 0.01]} />
       </PopKid>
     </group>
   );
@@ -1243,8 +1194,8 @@ function PillarFollowUp() {
       </PopKid>
       <PopKid delay={1.4} position={[-0.85, -0.62, 0]}>
         <RPane w={2.3} h={0.6} r={0.18} color={PANEL_2} borderOpacity={0.3} />
-        <Label text="Great — I need a quote" size={0.11} color={MUT} position={[0, 0.1, 0.01]} />
-        <Label text="for next week." size={0.11} color={MUT} position={[0, -0.13, 0.01]} />
+        <Label text="Any chance of a table" size={0.11} color={MUT} position={[0, 0.1, 0.01]} />
+        <Label text="for six on Friday?" size={0.11} color={MUT} position={[0, -0.13, 0.01]} />
       </PopKid>
       <PopKid delay={1.9} position={[0.75, -1.4, 0]}>
         <RPane w={2.4} h={0.5} r={0.18} color={EMERALD} border={EM_LIGHT} borderOpacity={0.45} />
@@ -1260,7 +1211,7 @@ function PillarFollowUp() {
           </mesh>
         ))}
       </group>
-      <Label text="NEVER MISS A CLIENT AGAIN" size={0.115} position={[0, -2.0, 0]} />
+      <Label text="NEVER MISS A BOOKING AGAIN" size={0.115} position={[0, -2.0, 0]} />
     </group>
   );
 }
@@ -1278,8 +1229,8 @@ function PillarReviews() {
         ))}
       </group>
       {[
-        ["M", "Fixed same day — fantastic work.", 0.15, 0.45],
-        ["J", "Fast quote, fair price. Hired again.", -0.85, 0.75],
+        ["M", "Best duck in the city. Booked again.", 0.15, 0.45],
+        ["J", "Texted me back in seconds. Table held.", -0.85, 0.75],
       ].map(([init, line, y, d]) => (
         <PopKid key={init as string} delay={d as number} position={[0, y as number, 0]}>
           <RPane w={3.3} h={0.78} r={0.12} color={PANEL_2} borderOpacity={0.28} />
@@ -1330,7 +1281,7 @@ function PillarReporting() {
       {/* KPI chips */}
       {[
         ["CALLS", "+31%", -1.4],
-        ["LEADS", "42", 0],
+        ["COVERS", "84", 0],
         ["REVIEWS", "+6", 1.4],
       ].map(([k, v, x], i) => (
         <PopKid key={k} delay={0.15 + i * 0.12} position={[x as number, 0.82, 0.01]}>
@@ -1825,11 +1776,11 @@ function drawBrochureSite(g: CanvasRenderingContext2D, W: number, H: number) {
   g.fillStyle = "#2e3f57";
   g.font = `bold ${26 * s}px Arial`;
   g.textAlign = "left";
-  g.fillText("ACME SERVICES", 44 * s, 118 * s);
+  g.fillText("THE OLD MILL", 44 * s, 118 * s);
   g.fillStyle = "#8e8e88";
   g.font = `${15 * s}px Arial`;
   g.textAlign = "right";
-  g.fillText("Home      About      Services      Gallery      Contact", 980 * s, 116 * s);
+  g.fillText("Home      About      Menu      Gallery      Contact", 980 * s, 116 * s);
   g.strokeStyle = "#e2e1db";
   g.lineWidth = 1.5 * s;
   g.beginPath();
@@ -1965,38 +1916,12 @@ function ProblemExhibit() {
       </GemPart>
       {/* caption grows in place at the bottom, last */}
       <GemPart sec={PROB} to={[0, -2.15, 0]} from={[0, -2.15, 0]} delay={0.6}>
-        <Label text="LEADS LEAK OUT EVERY DAY" size={0.105} color={MUT} position={[0, 0, 0]} />
+        <Label text="TABLES GO EMPTY EVERY NIGHT" size={0.105} color={MUT} position={[0, 0, 0]} />
       </GemPart>
     </>
   );
 }
 
-/** Fuel — channels feed the system: energy flows from every chip into the gem. */
-function FuelExhibit() {
-  const FUEL = SECTION_IDS.indexOf("fuel");
-  const chips = ["GOOGLE ADS", "META & IG", "RETARGETING", "EMAIL · SMS", "SOCIAL", "LANDING PAGES"];
-  const pos = (i: number): [number, number] => {
-    const a = (i / chips.length) * Math.PI * 2 + Math.PI / 6;
-    return [Math.cos(a) * 2.3, Math.sin(a) * 1.55];
-  };
-  return (
-    <>
-      {/* each channel chip rings out of the gem to its place, staggered */}
-      {chips.map((c, i) => {
-        const [x, y] = pos(i);
-        return (
-          <GemPart key={c} sec={FUEL} to={[x, y, 0.02]} delay={i * 0.08}>
-            <ChipTag text={c} w={1.62} h={0.46} size={0.095} borderOpacity={0.38} />
-          </GemPart>
-        );
-      })}
-      {/* caption grows in place at the bottom, last */}
-      <GemPart sec={FUEL} to={[0, -2.25, 0]} from={[0, -2.25, 0]} delay={0.5}>
-        <Label text="FUEL FEEDS THE SYSTEM — NEVER THE OTHER WAY" size={0.105} />
-      </GemPart>
-    </>
-  );
-}
 
 /** The site Gemfield builds — paper-and-emerald, one clear action, alive.
  *  The deliberate opposite of the dead ACME brochure in the Problem chapter. */
@@ -2021,7 +1946,7 @@ function drawGemfieldSitePart(part: "full" | "shell" | "content") {
   g.font = `14px Arial`;
   g.font = `${14 * s}px Arial`;
   g.textAlign = "center";
-  g.fillText("summithomeservices.com", 512 * s, 33 * s);
+  g.fillText("summittaphouse.com", 512 * s, 33 * s);
   // page
   g.fillStyle = "#fafaf7";
   g.fillRect(0, 56 * s, W, H - 56 * s);
@@ -2031,7 +1956,7 @@ function drawGemfieldSitePart(part: "full" | "shell" | "content") {
   g.fillStyle = "#15171a";
   g.font = `600 ${22 * s}px 'Helvetica Neue', Arial, sans-serif`;
   g.textAlign = "left";
-  g.fillText("SUMMIT HOME SERVICES", 44 * s, 106 * s);
+  g.fillText("SUMMIT TAPHOUSE", 44 * s, 106 * s);
   g.fillStyle = EM;
   g.font = `600 ${17 * s}px 'Helvetica Neue', Arial, sans-serif`;
   g.textAlign = "right";
@@ -2046,20 +1971,20 @@ function drawGemfieldSitePart(part: "full" | "shell" | "content") {
   g.textAlign = "left";
   g.fillStyle = "#15171a";
   g.font = `600 ${40 * s}px Georgia, serif`;
-  g.fillText("Same-day quotes.", 44 * s, 204 * s);
-  g.fillText("Guaranteed work.", 44 * s, 252 * s);
+  g.fillText("Twenty taps, one kitchen,", 44 * s, 204 * s);
+  g.fillText("open till late.", 44 * s, 252 * s);
   g.fillStyle = "#4a4f55";
   g.font = `${16 * s}px 'Helvetica Neue', Arial, sans-serif`;
-  g.fillText("Serving the Bay Area since 2009 — licensed, insured, on time.", 44 * s, 288 * s);
+  g.fillText("412 Mission St — kitchen till 10, bar till 11. Walk-ins welcome.", 44 * s, 288 * s);
   // CTA button
   g.fillStyle = EM;
   rrPath(g, 44 * s, 316 * s, 208 * s, 48 * s, 9 * s);
   g.fill();
   g.fillStyle = "#ffffff";
   g.font = `600 ${17 * s}px 'Helvetica Neue', Arial, sans-serif`;
-  g.fillText("Get a Free Quote  →", 68 * s, 346 * s);
+  g.fillText("Book a Table  →", 68 * s, 346 * s);
   g.fillStyle = EM;
-  g.fillText("See our work", 288 * s, 346 * s);
+  g.fillText("See tonight\u2019s menu", 288 * s, 346 * s);
   // review card, upper right
   g.fillStyle = "#ffffff";
   g.strokeStyle = "#e3e3dc";
@@ -2071,12 +1996,12 @@ function drawGemfieldSitePart(part: "full" | "shell" | "content") {
   for (let i = 0; i < 5; i++) g.fillText("★", (688 + i * 30) * s, 216 * s);
   g.fillStyle = "#15171a";
   g.font = `600 ${17 * s}px 'Helvetica Neue', Arial, sans-serif`;
-  g.fillText("4.9 · 127 reviews", 688 * s, 250 * s);
+  g.fillText("4.9 · 218 reviews", 688 * s, 250 * s);
   g.fillStyle = "#8a8f94";
   g.font = `${13 * s}px 'Helvetica Neue', Arial, sans-serif`;
   g.fillText("Google · verified", 688 * s, 272 * s);
   // service tiles
-  const tile = (x: number, label: string) => {
+  const tile = (x: number, label: string, sub: string) => {
     g.fillStyle = "#ffffff";
     g.strokeStyle = "#e3e3dc";
     rrPath(g, x * s, 420 * s, 292 * s, 148 * s, 10 * s);
@@ -2094,18 +2019,18 @@ function drawGemfieldSitePart(part: "full" | "shell" | "content") {
     g.fillText(label, (x + 22) * s, 520 * s);
     g.fillStyle = "#8a8f94";
     g.font = `${13 * s}px 'Helvetica Neue', Arial, sans-serif`;
-    g.fillText("Fast, clean, warrantied", (x + 22) * s, 544 * s);
+    g.fillText(sub, (x + 22) * s, 544 * s);
   };
-  tile(44, "Roof Repair");
-  tile(366, "Remodels");
-  tile(688, "Emergency Calls");
+  tile(44, "Book a Table", "Pick where you sit");
+  tile(366, "Tonight\u2019s Menu", "Updated 7:12 tonight");
+  tile(688, "What\u2019s on Tap", "20 lines, changed daily");
   // footer trust strip
   g.fillStyle = "#f2f2ec";
   g.fillRect(0, H - 60 * s, W, 60 * s);
   g.fillStyle = "#4a4f55";
   g.font = `${14 * s}px 'Helvetica Neue', Arial, sans-serif`;
   g.textAlign = "center";
-  g.fillText("Licensed & insured  ·  Same-week starts  ·  Every call answered", 512 * s, H - 24 * s);
+  g.fillText("Open till 11  ·  Walk-ins welcome  ·  Kitchen till 10", 512 * s, H - 24 * s);
   };
 }
 
@@ -2119,7 +2044,7 @@ function OfferExhibit() {
       {/* the finished site grows solidly out of the gem — bright, alive, one
           clear action: everything the Problem chapter's brochure isn't */}
       <GemPart sec={OFR} from={GEM} to={WIN} delay={0}>
-        <ImagePanel url="/exhibits/site-summit-offer.jpg" w={3.7} h={2.54} r={0.1} glowOpacity={0.35} />
+        <ScreenPanel w={3.7} h={2.54} px={1024} r={0.1} draw={drawGemfieldSitePart("full")} glowOpacity={0.35} />
       </GemPart>
       {/* the caption grows out of the built website */}
       <GemPart sec={OFR} from={WIN} to={[0, -2.05, 0]} delay={1.2}>
@@ -2218,7 +2143,7 @@ function IndustriesExhibit() {
         </GemPart>
       ))}
       <GemPart sec={IND} to={[0, -2.3, 0]} from={[0, -2.3, 0]} delay={0.6}>
-        <Label text="BUILT FOR BUSINESSES THAT RUN ON QUALIFIED LEADS" size={0.095} />
+        <Label text="BUILT FOR ROOMS THAT LIVE OR DIE ON FULL TABLES" size={0.095} />
       </GemPart>
     </>
   );
@@ -2376,7 +2301,7 @@ function WhyExhibit() {
           <meshBasicMaterial color={EMERALD} transparent opacity={0.95} depthWrite={false} />
         </mesh>
         <Label text="G" size={0.14} color="#eaf6ef" position={[-1.5, 0, 0.02]} />
-        <Label text="EVERY AUDIT REVIEWED PERSONALLY" size={0.082} position={[0.18, 0, 0.01]} />
+        <Label text="EVERY ENQUIRY REVIEWED PERSONALLY" size={0.082} position={[0.18, 0, 0.01]} />
       </GemPart>
     </>
   );
@@ -2395,12 +2320,12 @@ function CtaExhibit() {
       {/* the one action — grows out, then breathes */}
       <GemPart sec={CTA} to={[0, -1.95, 0.05]} delay={0.4}>
         <group ref={chip}>
-          <ChipTag text="START WITH THE FREE AUDIT" w={2.7} h={0.5} color={EMERALD} textColor="#eaf6ef" border={EM_LIGHT} borderOpacity={0.6} size={0.105} />
+          <ChipTag text="BOOK A CALL" w={2.7} h={0.5} color={EMERALD} textColor="#eaf6ef" border={EM_LIGHT} borderOpacity={0.6} size={0.105} />
         </group>
       </GemPart>
       {/* caption grows in place, last */}
       <GemPart sec={CTA} to={[0, -2.5, 0]} from={[0, -2.5, 0]} delay={0.55}>
-        <Label text="ABOUT 90 SECONDS — WE TIMED IT" size={0.085} color={MUT} position={[0, 0, 0]} />
+        <Label text="NO PREP NEEDED ON YOUR END" size={0.085} color={MUT} position={[0, 0, 0]} />
       </GemPart>
     </>
   );
@@ -2429,10 +2354,6 @@ function Exhibits() {
           </Fade>
         )
       )}
-      {/* FUEL — rebuilt: chips ring out of the gem once it arrives. */}
-      <GemStage position={[X_SIDE("fuel") * AX, -0.1, 0]}>
-        <FuelExhibit />
-      </GemStage>
       {/* DESKII — rebuilt: the app window grows out of the gem (two-tier) and all
           six module cards erupt from the gem into the dashboard grid. */}
       <GemStage position={[X_SIDE("deskii") * AX, -0.05, 0]}>

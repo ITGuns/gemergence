@@ -28,6 +28,11 @@ npm run lint
 - `src/components/deskii-frame.tsx` — hand-drawn UI mocks: the Deskii control
   panel and `RestaurantSiteFrame`, the sample restaurant site in the homepage
   hero. **Swap for real seeded screenshots when captured.**
+- `src/components/immersive/scene.tsx` — the WebGL journey. Every screen in it
+  is drawn to a canvas (`ScreenPanel` + a `draw` function), not photographed;
+  `drawGemfieldSitePart` is the sample taphouse site, `drawBrochureSite` the
+  generic template it is contrasted against. There are no image files in
+  `/public` any more, so copy changes never leave a stale screenshot behind.
 - `gemfield_intake_schema_v2.json` — the post-purchase intake question bank,
   one entry per restaurant segment. The taxonomy is flat: `subSelectorParent`
   is null, so the N-002 sub-selector never renders.
@@ -56,10 +61,7 @@ version switcher. `/restaurants`, `/audit` and `/marketing` 301 to `/pricing`
    at it**, so a dead link is a dead funnel. Set up SPF/DKIM/DMARC before
    nurture emails.
 5. Set `gaId` / `metaPixelId` in constants.ts.
-6. `/immersive` still loads the pre-swap exhibit JPGs as WebGL textures
-   (`public/exhibits/*.jpg`, a home-services build). Reshoot or retire that
-   page before promoting it.
-7. `/` closing CTA links "See a site we built" at `/` until a real restaurant
+6. `/` closing CTA links "See a site we built" at `/` until a real restaurant
    case study exists.
 
 ## The October 2026 Front Door offer
