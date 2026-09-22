@@ -466,14 +466,27 @@ export const FOOTER = {
    PLANS — the tier ladder, the October offer, and the copy behind /pricing.
    ──────────────────────────────────────────────────────────────────────────── */
 
-/** October 2026 promotion window, inclusive, in the business's own timezone.
- *  Every October-specific element on /restaurants — the banner, the Front Door
- *  paragraph and the FAQ entry — reads this one window so they come down
- *  together on 1 November rather than one at a time. The inclusion is written
- *  into each October signer's agreement, so their plan is unaffected when the
- *  offer ends. Do not extend the window quietly; delete it. */
+/** Front Door promotion window, inclusive, in the business's own timezone.
+ *  Opened early — the deadline is what matters, so the copy is
+ *  deadline-led ("by 31 October") rather than month-led, and nothing tells a
+ *  September prospect to wait for October.
+ *
+ *  Every offer element — the banner on / and /pricing, the Front Door badge
+ *  and line, the detail paragraph, the FAQ entry and the closing CTA — reads
+ *  this one window, so they appear and disappear together rather than one at
+ *  a time. The inclusion is written into each signer's agreement, so their
+ *  plan is unaffected when the offer ends.
+ *
+ *  Bringing the start forward is safe. Moving `lastDay` is not: an offer that
+ *  quietly runs past its deadline teaches every future prospect to wait for
+ *  the next one. When it lapses, delete it — see the README. */
 export const RESTAURANT_PROMO = {
-  firstDay: "2026-10-01",
+  // Dates are Pacific, not the operator's local day: the offer belongs to the
+  // restaurant's calendar, which is why it survives to midnight PT on the 31st
+  // rather than dying at 5pm mid-service. That cuts both ways — this reads a
+  // day "early" from Asia, and is deliberately set so the offer is open now in
+  // both places.
+  firstDay: "2026-09-21",
   lastDay: "2026-10-31",
 };
 
@@ -503,7 +516,7 @@ export const RESTAURANTS_PAGE = {
   },
 
   promo: {
-    label: "October 2026 only",
+    label: "Until 31 October 2026",
     h: "Your menu and your bookings, in one panel. Included with Front Door.",
     // Segments rather than one string: the panel name is set in bold in the
     // approved copy, and copy stays out of the component. Note the wording is
@@ -527,7 +540,7 @@ export const RESTAURANTS_PAGE = {
     ],
     cta: "Claim it before 31 October",
     /** Added to the Front Door tier card for the duration of the offer. */
-    tierBadge: "October offer",
+    tierBadge: "Ends 31 October",
     tierLine: "Includes the menu and booking control panel when you sign by 31 October.",
   },
 
@@ -580,8 +593,8 @@ export const RESTAURANTS_PAGE = {
       { label: "Monthly content", cells: ["No", "No", "1 piece", "2 pieces"] as TableCell[] },
       { label: "Changes", cells: ["One a month", "Unlimited", "Unlimited", "Unlimited"] as TableCell[] },
     ],
-    /** Front Door carries the October offer, so its column is flagged for as
-     *  long as the offer runs. The badge and the line under the price come
+    /** Front Door carries the offer, so its column is flagged for as
+     *  long as it runs. The badge and the line under the price come
      *  from RESTAURANTS_PAGE.promo. Outside the window nothing is flagged. */
     recommendedDuringPromo: "Front Door",
   },
@@ -595,9 +608,9 @@ export const RESTAURANTS_PAGE = {
         "Booking is kept simple: a phone number, a text line and an email address, all in one place, with every request landing in a booking inbox you can see. Send us menu changes and we make them, one update a month included.",
       ],
       bullets: [] as { h: string; copy: string }[],
-      /** Rendered only while the October window is open. */
+      /** Rendered only while the offer window is open. */
       promoPara: {
-        lead: "Sign in October and you get more.",
+        lead: "Sign before 31 October and you get more.",
         copy: "The integrated menu and booking control panel is included at no extra cost for anyone who signs Front Door by 31 October. Run your own menu and take real bookings from day one, at the Front Door price.",
       },
       whoFor: "A single location with no website, or one nobody has touched in three years.",
@@ -754,7 +767,7 @@ export const RESTAURANTS_PAGE = {
 
   closing: {
     h: "Start where it hurts most.",
-    body: "Most restaurants should start at Front Door. It goes live in a week, and during October you get the booking system and the menu panel with it. If delivery commission is already your biggest line, skip ahead to Scale.",
+    body: "Most restaurants should start at Front Door. It goes live in a week, and until 31 October the integrated menu and booking control panel comes with it at no extra cost. If delivery commission is already your biggest line, skip ahead to Scale.",
     // Outside the promo window the middle clause would be a lie, so the
     // non-promo variant drops it.
     bodyAfterPromo:
