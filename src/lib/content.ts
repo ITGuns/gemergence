@@ -758,3 +758,288 @@ export const FOOTER = {
   ],
   location: "San Francisco, CA · Serving the United States",
 };
+
+/* ────────────────────────────────────────────────────────────────────────────
+   RESTAURANTS — the niche page at /restaurants.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/** October 2026 promotion window, inclusive, in the business's own timezone.
+ *  Every October-specific element on /restaurants — the banner, the Front Door
+ *  paragraph and the FAQ entry — reads this one window so they come down
+ *  together on 1 November rather than one at a time. The inclusion is written
+ *  into each October signer's agreement, so their plan is unaffected when the
+ *  offer ends. Do not extend the window quietly; delete it. */
+export const RESTAURANT_PROMO = {
+  firstDay: "2026-10-01",
+  lastDay: "2026-10-31",
+};
+
+export function isRestaurantPromoLive(now: Date = new Date()): boolean {
+  // Compare calendar dates in Pacific time. A UTC server would otherwise end
+  // the offer at 5pm on the 31st, which is mid-service for the people it is for.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  return today >= RESTAURANT_PROMO.firstDay && today <= RESTAURANT_PROMO.lastDay;
+}
+
+/** A tier-table cell. `em` marks the value the tier is bought for. */
+export type TableCell = string | { v: string; em: true };
+const em = (v: string): TableCell => ({ v, em: true });
+
+export const RESTAURANTS_PAGE = {
+  hero: {
+    eyebrow: "For restaurants, bars and taphouses",
+    h: "Your website should fill tables, not just exist.",
+    sub: "A site that loads fast, a menu that is never out of date, and bookings that arrive while you are on the floor. Live in a week.",
+    primaryCta: "See the plans",
+    secondaryCta: "Book a call",
+  },
+
+  promo: {
+    label: "October 2026 only",
+    h: "Two Foundation features, included with Front Door.",
+    // Segments rather than one string: the two feature names are set in bold
+    // in the approved copy, and copy stays out of the component.
+    body: [
+      { t: "Sign up for Front Door during October and we add the " },
+      { t: "advanced booking system", em: true },
+      { t: " and the " },
+      { t: "menu control panel", em: true },
+      { t: " to your control panel, at the Front Door price of $197 a month. Both are normally Foundation tier features. Offer ends 31 October." },
+    ] as { t: string; em?: boolean }[],
+    cta: "Start before the deadline",
+  },
+
+  problems: {
+    eyebrow: "What actually goes wrong",
+    h: "Four problems, in the order they cost you money.",
+    cards: [
+      {
+        h: "The menu is always wrong",
+        copy: "You 86 the halibut at seven and the website still sells it at nine. From Foundation up you change the menu yourself, in under a minute, from your phone.",
+      },
+      {
+        h: "The phone rings during service",
+        copy: "Every call during a rush is a table nobody is looking after. Bookings, allergens, parking and opening hours should not need a person.",
+      },
+      {
+        h: "Delivery apps take a third",
+        copy: "A $60 order through an aggregator can leave you $42. The same order through your own site leaves you $58. Scale includes ordering you own.",
+      },
+      {
+        h: "Nobody knows what is on tonight",
+        copy: "Trivia Tuesday, live music Friday, the new tap list. It lives in a Facebook post that is gone in three days and never shows up in a search.",
+      },
+    ],
+  },
+
+  table: {
+    eyebrow: "The plans",
+    h: "Four tiers. Pick the one that matches the problem.",
+    tiers: [
+      { name: "Front Door", price: "$197", period: "/mo", oneLine: "Be found, be correct", liveIn: "1 week", liveInEm: true },
+      { name: "Foundation", price: "$497", period: "/mo", oneLine: "Run your own floor and menu", liveIn: "1 week", liveInEm: true },
+      { name: "Growth", price: "$997", period: "/mo", oneLine: "Fill the tables", liveIn: "2 weeks", liveInEm: false },
+      { name: "Scale", price: "From $1,497", period: "/mo", oneLine: "Own the guest and the order", liveIn: "4 weeks", liveInEm: false },
+    ],
+    rows: [
+      { label: "Pages", cells: ["One", "Full site", "Full site, growing", "Full site, growing"] as TableCell[] },
+      { label: "Booking", cells: ["Phone, text and email", "Request form", em("Live availability"), "Live availability"] as TableCell[] },
+      { label: "Table selector", cells: ["No", em("Yes"), "Yes", "Yes"] as TableCell[] },
+      { label: "Menu on the site", cells: ["We maintain", em("You maintain"), "You maintain", "You maintain"] as TableCell[] },
+      { label: "Control panel", cells: ["Booking inbox", em("Booking manager"), em("Full control panel"), "Full control panel"] as TableCell[] },
+      { label: "Google listing", cells: ["Set up and corrected", "Set up and corrected", "Maintained", "Maintained"] as TableCell[] },
+      { label: "Events page", cells: ["No", "Yes", "Yes, with reminders", "Yes"] as TableCell[] },
+      { label: "Chat assistant", cells: ["No", "No", em("Yes"), "Yes"] as TableCell[] },
+      { label: "Missed call text back", cells: ["No", "No", em("Yes"), "Yes"] as TableCell[] },
+      { label: "Review engine", cells: ["No", "No", em("Yes"), "Yes"] as TableCell[] },
+      { label: "Online ordering", cells: ["No", "No", "No", em("Yes, you keep the margin")] as TableCell[] },
+      { label: "POS connection", cells: ["No", "No", "No", em("Yours, or we build you one")] as TableCell[] },
+      { label: "Guest database", cells: ["No", "No", "No", "Yes"] as TableCell[] },
+      { label: "Monthly content", cells: ["No", "No", "1 piece", "2 pieces"] as TableCell[] },
+      { label: "Changes", cells: ["One a month", "Unlimited", "Unlimited", "Unlimited"] as TableCell[] },
+    ],
+    /** Front Door carries the October offer, so it is the recommended plan
+     *  for as long as the offer runs. Outside the window nothing is flagged. */
+    recommendedDuringPromo: "Front Door",
+    promoBadge: "Recommended in October",
+  },
+
+  detail: [
+    {
+      name: "Front Door",
+      price: "$197 a month",
+      paras: [
+        "One page that loads fast on a phone, with your menu, your hours, your address and a tap to call button. We set up and correct your Google listing so the hours on Google, Maps and your site all finally agree. Built so AI assistants can read your menu and answer questions about you.",
+        "Booking is kept simple: a phone number, a text line and an email address, all in one place, with every request landing in a booking inbox you can see. Send us menu changes and we make them, one update a month included.",
+      ],
+      bullets: [] as { h: string; copy: string }[],
+      /** Rendered only while the October window is open. */
+      promoPara: {
+        lead: "In October,",
+        copy: "the advanced booking system and the menu control panel come with it, so you take real bookings and run your own menu at this price.",
+      },
+      whoFor: "A single location with no website, or one nobody has touched in three years.",
+    },
+    {
+      name: "Foundation",
+      price: "$497 a month",
+      paras: [
+        "Everything above, plus a real site: menu by category, events, private dining, about, contact. And the three things that turn a website into a tool you open during prep.",
+      ],
+      bullets: [
+        {
+          h: "The menu control panel.",
+          copy: "Change a price, add a special, mark something sold out. Live in under a minute, from your phone.",
+        },
+        {
+          h: "The table selector.",
+          copy: "A top-down plan of your room. A guest picks where they would like to sit, and your host sees the same plan to manage walk-ins and holds.",
+        },
+        {
+          h: "The booking manager.",
+          copy: "Every request in one list, with a button to mark it confirmed, seated or done. Enough to stop tracking bookings on a notepad by the register.",
+        },
+      ],
+      closingPara:
+        "Plus an events calendar, a monthly report, and unlimited changes to everything else by email.",
+      whoFor:
+        "Anyone whose menu changes more than once a month, and anyone who takes reservations. Which is almost everyone.",
+    },
+    {
+      name: "Growth",
+      price: "$997 a month",
+      paras: ["Everything above, plus the systems that work while you are on the floor."],
+      bullets: [
+        {
+          h: "Live booking.",
+          copy: "Real availability, not a request. Confirmation, a reminder the day before, and a waitlist when you are full.",
+        },
+        {
+          h: "The chat assistant.",
+          copy: "Answers hours, parking, allergens, whether you take walk-ins, what is on tap. Takes a booking when nobody is at the desk.",
+        },
+        {
+          h: "Missed call text back.",
+          copy: "Every call you could not answer during service gets a text within seconds.",
+        },
+        {
+          h: "The review engine.",
+          copy: "A review request after a visit, with your Google link ready to send.",
+        },
+        {
+          h: "Listings maintained",
+          copy: "across Google, Yelp, TripAdvisor and the directories.",
+        },
+        {
+          h: "A new page or post every month,",
+          copy: "and the full control panel: bookings, conversations, reviews and reports in one board.",
+        },
+      ],
+      whoFor: "A busy room where the phone ringing is a cost, not a benefit.",
+    },
+    {
+      name: "Scale",
+      price: "from $1,497 a month",
+      paras: ["Everything above, plus the two things that change the economics."],
+      bullets: [
+        {
+          h: "Online ordering you own.",
+          copy: "Pickup orders through your own site and your own payment account. You pay card processing, roughly 3 percent, instead of an aggregator commission of 15 to 30. On $8,000 a month of orders moved across, that is around $1,200 a month back in your pocket.",
+        },
+        {
+          h: "Your POS, connected. Or a new one, built.",
+          copy: "We connect to the till you already run where it has a way in, and we tell you which yours is before you sign. If it cannot connect, or you have had enough of it, we build you one: order entry, menu in step with the website, card payments and reporting.",
+        },
+        {
+          h: "Guest database and campaigns.",
+          copy: "Who came, how often, what they ordered. Birthday and win-back messages, and an email when the new tap list drops.",
+        },
+        {
+          h: "Landing pages",
+          copy: "for events and promotions, call tracking, and a quarterly review.",
+        },
+      ],
+      whoFor:
+        "Anyone paying more than about a thousand a month in delivery commission, or running a room big enough that seating is a job.",
+    },
+  ],
+
+  /** Sits below the table as its own block, never as a fifth column.
+   *  No list price is published — "from $3,500, scoped per group" only. */
+  strategic: {
+    name: "Strategic",
+    price: "From $3,500 a month",
+    paras: [
+      "For groups and multiple locations. One panel across every venue, gift cards and loyalty, a catering and private events pipeline with deposits taken online, waitlist with SMS paging, custom integrations, and menu engineering reports built from your POS data showing what actually makes money.",
+      "Priority build queue and direct access to the team that builds it.",
+    ],
+    note: "Scoped per group. The price is a starting point, not a list price.",
+  },
+
+  notDo: {
+    eyebrow: "Boundaries",
+    h: "What we do not do.",
+    paras: [
+      "We are not a delivery app and we will not get you on one. We do not run your social media. We do not answer your phone. We do not write your menu or tell you what to charge.",
+      "We build the systems and we keep them working. What goes on the plate is yours.",
+    ],
+  },
+
+  faq: {
+    h: "Fair questions.",
+    items: [
+      {
+        q: "How fast does it go live?",
+        a: "Front Door and Foundation, one week from signing. Growth, two. Scale, four. Strategic, six. Most of the site is built before you ever see the proposal, which is why the lower plans land so quickly.",
+      },
+      {
+        q: "Do I need to learn software?",
+        a: "No. The menu panel is the only thing you will touch, and it is built for a phone during prep, not a desk. Everything else runs itself or comes to you by email.",
+      },
+      {
+        q: "What happens to my Google listing?",
+        a: "We claim it if it is unclaimed, correct it if it is wrong, and keep it matching the site. On most restaurants we take on, the hours are wrong in at least three places.",
+      },
+      {
+        q: "Can I change plans?",
+        a: "Month to month, both directions. Nothing gets rebuilt when you move.",
+      },
+      {
+        q: "Who owns it?",
+        a: "You do. Domain, content, photos, guest data, and the build itself after six paid months.",
+      },
+      {
+        q: "What about my POS?",
+        a: "Tell us what you run and we will check it, free, before you commit to anything. Square, Toast, Clover, Lightspeed and most systems built in the last decade have a documented way to connect. Some older tills do not, and a few need their vendor's approval first. You get a straight answer at the start: yes, yes with a delay, or no.",
+      },
+      {
+        q: "What if my POS cannot connect, or I hate the one I have?",
+        a: "We build you one, included at Scale and Strategic. Order entry, menu in step with the website, card payments and reporting.",
+      },
+    ],
+    /** Comes down with the banner on 1 November. */
+    promoItem: {
+      q: "Does the October offer really end?",
+      a: "Yes, on 31 October. If you sign during October, the advanced booking system and the menu control panel are written into your agreement and stay with your plan.",
+    },
+  },
+
+  closing: {
+    h: "Start where it hurts most.",
+    body: "Most restaurants should start at Front Door. It goes live in a week, and during October you get the booking system and the menu panel with it. If delivery commission is already your biggest line, skip ahead to Scale.",
+    // Outside the promo window the middle clause would be a lie, so the
+    // non-promo variant drops it.
+    bodyAfterPromo:
+      "Most restaurants should start at Front Door. It goes live in a week. If delivery commission is already your biggest line, skip ahead to Scale.",
+    primaryCta: "Book a call",
+    secondaryCta: "See a site we built",
+  },
+
+  /** Shown on /pricing, pointing restaurant owners at their own version. */
+  crossLink: "Run a restaurant? There is a version of this for you.",
+};

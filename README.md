@@ -16,6 +16,7 @@ npm run lint
 - `src/lib/constants.ts` — email, Calendly URL, form endpoint, phone (null = hidden), analytics IDs (null = disabled), social links.
 - `src/app/globals.css` — the Ink & Emerald design tokens and component classes.
 - `src/components/deskii-frame.tsx` — placeholder Deskii previews. **Swap for real seeded screenshots when captured.**
+- `src/app/restaurants/page.tsx` — the restaurant niche page. Copy in `RESTAURANTS_PAGE`; the October offer is gated on `RESTAURANT_PROMO` + `isRestaurantPromoLive()` in content.ts, and the page carries `revalidate = 3600` so the offer lifts on 1 November without a deploy.
 - Founder block placeholders: `WHY.founder` in content.ts + the portrait blocks in `home/closing-sections.tsx` and `about/page.tsx`.
 
 ## Before launch (gates)
@@ -26,3 +27,14 @@ npm run lint
 4. Confirm domain DNS, Calendly URL, and FormSubmit endpoint activation; set up SPF/DKIM/DMARC before nurture emails.
 5. Set `gaId` / `metaPixelId` in constants.ts; verify audit form → email → Calendly end-to-end on a real phone.
 6. Marketing (Growth Fuel) management fees → publish numbers when confirmed.
+7. **/restaurants open items** — "See a site we built" in the closing CTA points at `/` until a restaurant case study exists; the page has no restaurant exhibit imagery yet.
+
+## After 31 October 2026
+
+The October offer on `/restaurants` is date-gated, so it stops rendering on its
+own. Delete the dead code once it has lapsed: `RESTAURANT_PROMO`,
+`isRestaurantPromoLive`, `RESTAURANTS_PAGE.promo`, `.faq.promoItem`,
+`.detail[0].promoPara`, `.closing.body` (keep `bodyAfterPromo`),
+`.table.recommendedDuringPromo` / `.promoBadge`, and the `revalidate` export.
+Do not extend the window instead — the inclusion is written into each October
+signer's agreement, so their plan is unaffected when the offer ends.

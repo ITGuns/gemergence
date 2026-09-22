@@ -13,6 +13,7 @@ const NAV = [
   { label: "Industries", href: "/#industries" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Restaurants", href: "/restaurants" },
   { label: "About", href: "/about" },
 ];
 
@@ -46,12 +47,12 @@ export function SiteHeader() {
           <Wordmark dark={dark} />
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main">
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-7" aria-label="Main">
           {NAV.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className={`text-[0.92rem] font-medium transition-colors ${
+              className={`whitespace-nowrap text-[0.92rem] font-medium transition-colors ${
                 dark ? "text-band-mut hover:text-white" : "text-ink2 hover:text-ink"
               }`}
             >

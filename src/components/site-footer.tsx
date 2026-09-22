@@ -13,6 +13,7 @@ const LINKS = [
   { label: "Industries", href: "/#industries" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Restaurants", href: "/restaurants" },
   { label: "Deskii", href: "/deskii" },
   { label: "About", href: "/about" },
 ];

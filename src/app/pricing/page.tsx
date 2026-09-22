@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Reveal } from "@/components/reveal";
 import { ArrowRight, Check, Minus } from "@/components/icons";
 import { RevenueCalculator } from "@/components/calculator";
-import { PRICING_PAGE, FUEL } from "@/lib/content";
+import { PRICING_PAGE, FUEL, RESTAURANTS_PAGE } from "@/lib/content";
 import { CHECKOUT } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -40,6 +40,12 @@ export default function PricingPage() {
             <p className="measure mt-6 text-[1.05rem] leading-relaxed text-ink2">
               {PRICING_PAGE.body}
             </p>
+            {/* Restaurants price on a different shape — tiers, an October
+                offer, ordering margin — so they get their own page. */}
+            <Link href="/restaurants" className="link-arrow mt-6 text-[0.95rem]">
+              {RESTAURANTS_PAGE.crossLink}
+              <ArrowRight size={14} />
+            </Link>
           </Reveal>
         </div>
       </section>
