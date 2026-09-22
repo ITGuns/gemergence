@@ -82,9 +82,17 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body>
-        {/* Gate reveal-hidden styles on JS availability — must run before paint. */}
+        {/* Gate reveal-hidden styles on JS availability — must run before paint.
+            The timer is the failsafe: `js` hides every section at opacity 0 and
+            only the Reveal effect ever un-hides them, so a bundle that never
+            runs used to leave the whole page blank. Reveal clears this on mount;
+            if it doesn't, `reveal-off` drops the hidden state after 3s. */}
         <script
-          dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.documentElement.classList.add('js');" +
+              "window.__gfRevealFailsafe=setTimeout(function(){document.documentElement.classList.add('reveal-off')},3000)",
+          }}
         />
         <script
           type="application/ld+json"

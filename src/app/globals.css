@@ -176,8 +176,12 @@ body {
 
 /* ── Scroll reveal (once, transform/opacity only) ──
    Hidden state applies only when JS is running (html.js set in layout),
-   so no-JS visitors and crawlers always see full content. */
-html.js .reveal {
+   so no-JS visitors and crawlers always see full content.
+   `reveal-off` is the failsafe: layout.tsx arms a timer before hydration
+   and Reveal cancels it on mount, so if the bundle never runs — blocked
+   chunk, extension, hydration crash — the hidden state is dropped instead
+   of leaving a fully-populated page painted blank. */
+html.js:not(.reveal-off) .reveal {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
