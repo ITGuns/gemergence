@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { VersionSwitcher } from "@/components/version-switcher";
 import { SITE } from "@/lib/constants";
+import { Analytics } from "@vercel/analytics/next";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -104,6 +105,8 @@ export default function RootLayout({
         <main>{children}</main>
         <SiteFooter />
         <VersionSwitcher />
+        {/* Vercel Web Analytics: page views and visitors for the Gemfield control panel. */}
+        <Analytics />
       </body>
     </html>
   );
